@@ -1,5 +1,5 @@
 import sys
-import ordereddict
+from collections import OrderedDict
 
 class Unit(object):
     """docstring for Unit"""
@@ -58,7 +58,7 @@ class Metabolite(object):
         self.formula            = kwargs.get('formula',None)
         self.charge             = kwargs.get('charge',None)
         self.boundaryCondition  = kwargs.get('boundaryCondition',False)
-        self.participations     = ordereddict.OrderedDict()
+        self.participations     = OrderedDict()
         self.notes              = {}
     
     def __str__(self):
@@ -75,7 +75,7 @@ class Reaction(object):
         self.id                     = arg
         self.name                   = kwargs.get('name',self.id)
         self.reversible             = kwargs.get('reversible',None)
-        self.participants           = ordereddict.OrderedDict()
+        self.participants           = OrderedDict()
         self.lower_bound            = -1e4
         self.upper_bound            = 1e4
         self.default_bounds         = (self.lower_bound,self.upper_bound)
@@ -147,7 +147,7 @@ class Gene(object):
     
 
 
-class _Compartments(ordereddict.OrderedDict):
+class _Compartments(OrderedDict):
     """docstring for Compartments"""
     def __init__(self, *arg, **kwargs):
         super(_Compartments, self).__init__(*arg,**kwargs)
@@ -164,7 +164,7 @@ class _Compartments(ordereddict.OrderedDict):
     
 
 
-class _Metabolites(ordereddict.OrderedDict):
+class _Metabolites(OrderedDict):
     """docstring for Metabolites"""
     def __init__(self, *arg, **kwargs):
         super(_Metabolites, self).__init__(*arg,**kwargs)
@@ -179,7 +179,7 @@ class _Metabolites(ordereddict.OrderedDict):
         """docstring for remove"""
         self.pop(metabolite.id)
 
-class _Reactions(ordereddict.OrderedDict):
+class _Reactions(OrderedDict):
     """docstring for Reactions"""
     def __init__(self, *arg, **kwargs):
         super(_Reactions, self).__init__(*arg,**kwargs)
@@ -210,7 +210,7 @@ class _Reactions(ordereddict.OrderedDict):
         return [self[r_id] for r_id in metabolite.participations if metabolite.participations[r_id] > 0]
 
 
-class _Genes(ordereddict.OrderedDict):
+class _Genes(OrderedDict):
     """docstring for Genes"""
     def __init__(self, *arg, **kwargs):
         super(_Genes, self).__init__(*arg,**kwargs)
