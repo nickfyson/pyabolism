@@ -5,7 +5,7 @@ setup(
     name = "Pyabolism",
     version = "0.1dev",
     author = "Nick Fyson",
-    author_email = "nickfyson@gmail.com",
+    author_email = "nick@nickfyson.co.uk",
     description = ("A module for constraint-based simulation of metabolic networks."),
     license = "BSD",
     keywords = "FBA metabolic network",
