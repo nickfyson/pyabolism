@@ -1,4 +1,3 @@
 
-
-import model,io,simulate
+from . import model,io,simulate
 

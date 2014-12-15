@@ -10,7 +10,7 @@ setup(
     license = "BSD",
     keywords = "FBA metabolic network",
     url = "http://pypi.python.org/pypi/pyabolism",
-    packages=['pyabolism',],
+    packages=['pyabolism','pyabolism.simulate'],
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.md')).read(),
     classifiers=[
         "Development Status :: 1 - Planning",
