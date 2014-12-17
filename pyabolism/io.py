@@ -99,12 +99,6 @@ def load_model(filename):
         
         model.reactions.add(reaction)
     
-    # strip out boundary conditions
-    # for metabolite in model.metabolites.values():
-    #     if metabolite.boundaryCondition:
-    #         model.metabolites.remove(metabolite)
-            # print 'gone!'
-    
     return model
 
 
