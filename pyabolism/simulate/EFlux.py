@@ -14,7 +14,7 @@ def _get_capacity(gene_association,expressions):
     gene_association = gene_association.replace('(',' ').replace(')',' ')
     
     # we refer to each set of genes sufficient to catalyse the reaction as a 'clause'
-    clauses = gene_association.lower().split(' or ')
+    clauses = gene_association.split(' or ')
     
     capacity = 0
     for clause in clauses:
@@ -64,7 +64,8 @@ def EFlux(model,expressions,limit_unpaired=False,norm='L2',show=False):
     
     # make any activated exchanges and transports unlimited
         # while respecting existing directionality of bounds
-    for r in get_exchange_reactions(model)+get_transport_reactions(model):
+    for r in get_exchange_reactions(model):
+    #for r in get_exchange_reactions(model)+get_transport_reactions(model):
         if r.lower_bound < 0.0 and r.reversible:
             r.lower_bound = -np.infty
         if r.upper_bound > 0.0:
