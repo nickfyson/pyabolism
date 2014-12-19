@@ -101,10 +101,6 @@ class Reaction(object):
     def __repr__(self):
         return self.id
 
-    def get_participants(self):
-        """docstring for get_participants"""
-        return _participants
-    
     def clear_participants(self):
         """docstring for clear_participants"""
         for metabolite in self.participants:
