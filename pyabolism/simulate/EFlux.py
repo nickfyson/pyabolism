@@ -30,7 +30,7 @@ def EFlux(model,expressions,limit_unpaired=False,norm='L2',show=False):
     
     # we compile a dictionary of capacities for all reactions in the model
     capacities = {}
-    for r in model.reactions.values():
+    for r in model.reactions():
         gene_association = r.notes.get('GENE_ASSOCIATION','')
 
         capacities[r.id] = _get_capacity(gene_association,expressions)
@@ -40,7 +40,7 @@ def EFlux(model,expressions,limit_unpaired=False,norm='L2',show=False):
     median_capacity = np.median( [v for k,v in capacities.items() if v] )
     
     # the bounds on each reaction are set in turn
-    for r in model.reactions.values():
+    for r in model.reactions():
 
         capacity = capacities[r.id]
         
