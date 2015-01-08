@@ -21,12 +21,12 @@ def FBA(model,show=False,norm=''):
     
     # the fluxes are extracted from the LP and stored in the reactions of the MetaModel
         # preserving the fluxes as found in the model before FBA
-    for reaction in model.reactions.values():
+    for reaction in model.reactions():
         reaction.loaded_flux = reaction.flux_value
         reaction.flux_value  = lp.getVarByName(reaction.id).X
     
     # shadow price of a constraint is a property that can be useful for some analyses
-    for metabolite in model.metabolites.values():
+    for metabolite in model.metabolites():
         if lp.getConstrByName(metabolite.id):
             metabolite.shadow = lp.getConstrByName(metabolite.id).getAttr('Pi')
         else:
@@ -39,7 +39,7 @@ def FBA(model,show=False,norm=''):
         if norm == 'L1':
             objective = grb.LinExpr()
 
-            for reaction in model.reactions.values():
+            for reaction in model.reactions():
                 
                 var        = lp.getVarByName(reaction.id)
                 flux_value = reaction.flux_value
@@ -60,7 +60,7 @@ def FBA(model,show=False,norm=''):
         # the euclidean norm requires non-linear objective, but allows the sign of each component to vary freely
         elif norm == 'L2':
             objective = grb.QuadExpr()
-            for reaction in model.reactions.values():
+            for reaction in model.reactions():
                 var        = lp.getVarByName(reaction.id)
                 flux_value = reaction.flux_value
  
@@ -83,12 +83,12 @@ def FBA(model,show=False,norm=''):
         lp.optimize()
 
         # we store the new fluxes found thanks to the minimisation
-        for reaction in model.reactions.values():
+        for reaction in model.reactions():
             reaction.flux_value = lp.getVarByName(reaction.id).X
     
     # we store the total objective achieved as a property of the model
     model.total_objective = 0
-    for reaction in [reaction for reaction in model.reactions.values() if reaction.objective_coefficient != 0]:
+    for reaction in [reaction for reaction in model.reactions() if reaction.objective_coefficient != 0]:
             model.total_objective += reaction.flux_value * reaction.objective_coefficient
             
             # where required, the flux through targeted reactions is output to the console

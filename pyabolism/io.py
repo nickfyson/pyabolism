@@ -23,7 +23,7 @@ def load_model(filename):
     # add all compartments
     for sbml_compartment in sbml_model.getListOfCompartments():
         compartment = Compartment(sbml_compartment.getId(),name=sbml_compartment.getName(),outside=sbml_compartment.getOutside())
-        model.compartments.add(compartment)
+        model.compartment.add(compartment)
     
     # add all the unit definitions
     for sbml_unitDefinition in sbml_model.getListOfUnitDefinitions():
@@ -47,7 +47,7 @@ def load_model(filename):
                         boundaryCondition=sbml_species.getBoundaryCondition()
                         )
         metabolite.raw_notes = sbml_species.getNotesString()
-        model.metabolites.add(metabolite)
+        model.metabolite.add(metabolite)
     
     # add all reactions
     for sbml_reaction in sbml_model.getListOfReactions():
@@ -70,14 +70,14 @@ def load_model(filename):
         for sbml_reactant in sbml_reaction.getListOfReactants():
             
             try:
-                metabolite      = model.metabolites[sbml_reactant.getSpecies()]
+                metabolite      = model.metabolite[sbml_reactant.getSpecies()]
             except KeyError:
                 m_id = sbml_reactant.getSpecies()
                 metabolite = Metabolite(m_id,
                                 compartment=m_id.split('_')[-1],
                                 boundaryCondition=False
                                 )
-                model.metabolites.add(metabolite)
+                model.metabolite.add(metabolite)
             stoichiometry   = -1.0*sbml_reactant.getStoichiometry()
             
             reaction.add_participant(metabolite,stoichiometry)
@@ -85,25 +85,19 @@ def load_model(filename):
         for sbml_reactant in sbml_reaction.getListOfProducts():
             
             try:
-                metabolite      = model.metabolites[sbml_reactant.getSpecies()]
+                metabolite      = model.metabolite[sbml_reactant.getSpecies()]
             except KeyError: 
                 m_id = sbml_reactant.getSpecies()
                 metabolite = Metabolite(m_id,
                                 compartment=m_id.split('_')[-1],
                                 boundaryCondition=False
                                 )
-                model.metabolites.add(metabolite)
+                model.metabolite.add(metabolite)
             stoichiometry   = 1.0*sbml_reactant.getStoichiometry()
             
             reaction.add_participant(metabolite,stoichiometry)
         
-        model.reactions.add(reaction)
-    
-    # strip out boundary conditions
-    # for metabolite in model.metabolites.values():
-    #     if metabolite.boundaryCondition:
-    #         model.metabolites.remove(metabolite)
-            # print 'gone!'
+        model.reaction.add(reaction)
     
     return model
 
@@ -119,12 +113,12 @@ def save_model(model,filename):
     if model.name:
         sbml_model.setName(model.name)
     
-    for compartment in model.compartments.values():
+    for compartment in model.compartments():
         sbml_compartment = sbml_model.createCompartment()
         sbml_compartment.setId(compartment.id)
         sbml_compartment.setName(compartment.name)
     
-    for unit_definition in model.unit_definitions.values():
+    for unit_definition in model.unit_definitions():
         sbml_unitDefinition = sbml_model.createUnitDefinition()
         sbml_unitDefinition.setId(unit_definition.id)
         for unit in unit_definition.units:
@@ -135,7 +129,7 @@ def save_model(model,filename):
             sbml_unit.setExponent(unit.exponent)
             sbml_unit.setScale(unit.scale)
     
-    for metabolite in model.metabolites.values():
+    for metabolite in model.metabolites():
         species = sbml_model.createSpecies()
         species.setId(metabolite.id)
         species.setName(metabolite.name)
@@ -147,7 +141,7 @@ def save_model(model,filename):
                 species.appendNotes('\n<html:p>%s: %s</html:p>'%(key,value))
             species.appendNotes('\n')
     
-    for reaction in model.reactions.values():
+    for reaction in model.reactions():
         sbml_reaction = sbml_model.createReaction()
         sbml_reaction.setId(reaction.id)
         sbml_reaction.setName(reaction.name)

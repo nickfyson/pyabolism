@@ -101,10 +101,6 @@ class Reaction(object):
     def __repr__(self):
         return self.id
 
-    def get_participants(self):
-        """docstring for get_participants"""
-        return _participants
-    
     def clear_participants(self):
         """docstring for clear_participants"""
         for metabolite in self.participants:
@@ -146,11 +142,10 @@ class Gene(object):
         return str(self.expression > 0)
     
 
-
-class _Compartments(OrderedDict):
+class _CompartmentDict(OrderedDict):
     """docstring for Compartments"""
     def __init__(self, *arg, **kwargs):
-        super(_Compartments, self).__init__(*arg,**kwargs)
+        super(_CompartmentDict, self).__init__(*arg,**kwargs)
     
     def add(self,compartment):
         """docstring for add"""
@@ -164,10 +159,10 @@ class _Compartments(OrderedDict):
     
 
 
-class _Metabolites(OrderedDict):
+class _MetaboliteDict(OrderedDict):
     """docstring for Metabolites"""
     def __init__(self, *arg, **kwargs):
-        super(_Metabolites, self).__init__(*arg,**kwargs)
+        super(_MetaboliteDict, self).__init__(*arg,**kwargs)
     
     def add(self,metabolite):
         """docstring for _add_metabolite"""
@@ -179,10 +174,10 @@ class _Metabolites(OrderedDict):
         """docstring for remove"""
         self.pop(metabolite.id)
 
-class _Reactions(OrderedDict):
+class _ReactionDict(OrderedDict):
     """docstring for Reactions"""
     def __init__(self, *arg, **kwargs):
-        super(_Reactions, self).__init__(*arg,**kwargs)
+        super(_ReactionDict, self).__init__(*arg,**kwargs)
     
     def add(self,reaction):
         """docstring for _add_metabolite"""
@@ -210,10 +205,10 @@ class _Reactions(OrderedDict):
         return [self[r_id] for r_id in metabolite.participations if metabolite.participations[r_id] > 0]
 
 
-class _Genes(OrderedDict):
+class _GeneDict(OrderedDict):
     """docstring for Genes"""
     def __init__(self, *arg, **kwargs):
-        super(_Genes, self).__init__(*arg,**kwargs)
+        super(_GeneDict, self).__init__(*arg,**kwargs)
     
     def add(self,gene):
         """docstring for add"""
@@ -232,8 +227,25 @@ class MetaModel(object):
     def __init__(self, **kwargs):
         self.id               = kwargs.get('id',None)
         self.name             = kwargs.get('name',None)
-        self.metabolites      = kwargs.get('metabolites',_Metabolites())
-        self.reactions        = kwargs.get('reactions',_Reactions())
-        self.compartments     = kwargs.get('compartments',_Compartments())
-        self.genes            = kwargs.get('genes',_Genes())
+        self.metabolite       = kwargs.get('metabolites',_MetaboliteDict())
+        self.reaction         = kwargs.get('reactions',_ReactionDict())
+        self.compartment      = kwargs.get('compartments',_CompartmentDict())
+        self.gene             = kwargs.get('genes',_GeneDict())
         self.unit_definitions = kwargs.get('unit_definitions',{})   
+
+    def metabolites(self):
+        """docstring for metabolites"""
+        return self.metabolite.values()
+
+    def reactions(self):
+        """docstring for metabolites"""
+        return self.reaction.values()
+
+    def compartments(self):
+        """docstring for metabolites"""
+        return self.compartment.values()
+
+    def genes(self):
+        """docstring for metabolites"""
+        return self.gene.values()
+
