@@ -27,6 +27,9 @@ def _get_capacity(gene_association,expressions):
 
 
 def EFlux(model,expressions,limit_unpaired=False,norm='L2',show=False):
+
+    for r in model.reactions():
+        r.reset_bounds()
     
     # we compile a dictionary of capacities for all reactions in the model
     capacities = {}
@@ -41,6 +44,9 @@ def EFlux(model,expressions,limit_unpaired=False,norm='L2',show=False):
     
     # the bounds on each reaction are set in turn
     for r in model.reactions():
+
+        if r in get_exchange_reactions(model):
+            continue
 
         capacity = capacities[r.id]
         
@@ -62,10 +68,9 @@ def EFlux(model,expressions,limit_unpaired=False,norm='L2',show=False):
         
         r.upper_bound = capacity
     
-    # make any activated exchanges and transports unlimited
+    # make any activated exchanges unlimited
         # while respecting existing directionality of bounds
     for r in get_exchange_reactions(model):
-    #for r in get_exchange_reactions(model)+get_transport_reactions(model):
         if r.lower_bound < 0.0 and r.reversible:
             r.lower_bound = -np.infty
         if r.upper_bound > 0.0:
