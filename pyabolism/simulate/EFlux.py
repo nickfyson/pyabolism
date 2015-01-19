@@ -26,8 +26,8 @@ def _get_capacity(gene_association,expressions):
     return capacity
 
 
-def EFlux(model,expressions,limit_unpaired='',norm='L2',show=False):
-    
+def EFlux(model,expressions,limit_unpaired='',norm='L2',show=False,unlimited_transports=False):
+
     # we compile a dictionary of capacities for all reactions in the model
     capacities = {}
     for r in model.reactions():
@@ -72,12 +72,17 @@ def EFlux(model,expressions,limit_unpaired='',norm='L2',show=False):
     # make any activated exchanges and transports unlimited
         # while respecting existing directionality of bounds
     for r in get_exchange_reactions(model):
-    #for r in get_exchange_reactions(model)+get_transport_reactions(model):
         if r.lower_bound < 0.0 and r.reversible:
             r.lower_bound = -np.infty
         if r.upper_bound > 0.0:
             r.upper_bound = np.infty
     
+    if unlimited_transports:
+        for r in get_transport_reactions(model):
+            if r.lower_bound < 0.0 and r.reversible:
+                r.lower_bound = -np.infty
+            if r.upper_bound > 0.0:
+                r.upper_bound = np.infty
     # with the reaction bounds appropriately set, the problem is just standard FBA
     FBA(model,show=show,norm=norm)
     
