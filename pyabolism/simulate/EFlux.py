@@ -26,57 +26,50 @@ def _get_capacity(gene_association,expressions):
     return capacity
 
 
-def EFlux(model,expressions,limit_unpaired=False,norm='L2',show=False):
-
+def EFlux(model,expressions,norm='L2',show=False,unlimited_transports=False):
+    """implementation of the EF-Flux algorithm (Colijn et al)"""
+    
     for r in model.reactions():
         r.reset_bounds()
+ 
+    exchanges  = get_exchange_reactions(model)
+    transports = get_transport_reactions(model)
     
-    # we compile a dictionary of capacities for all reactions in the model
+    # every reaction gets a maxiumum capacity, dictated by its GPR string
     capacities = {}
     for r in model.reactions():
         gene_association = r.notes.get('GENE_ASSOCIATION','')
 
         capacities[r.id] = _get_capacity(gene_association,expressions)
     
-    # in situations where we limit reactions that are *not* limited by expression
-        # we store the median of all determined capacties
-    median_capacity = np.median( [v for k,v in capacities.items() if v] )
-    
-    # the bounds on each reaction are set in turn
     for r in model.reactions():
 
-        if r in get_exchange_reactions(model):
+        if r in exchanges:
             continue
-
+        
+        if unlimited_transports and r in transports:
+            continue
+                
         capacity = capacities[r.id]
         
-        # if expression-inspired limits are scarce...
-        if not capacity:
-            #...we may wish to cap unbounded reactions
-            if limit_unpaired:
-                capacity = median_capacity
-            #...otherwise, just leave it as unbounded
-            else:
-                capacity = np.infty
-        
-        # reversible reactions use the same enzyme, and hence get the same bounds
+        # this value for capacity determines the maximum flow possible through the reaction
+        r.upper_bound = capacity
+
+        # capacity due to enzyme expression can work in either direction (for reversible reactions)
         if r.reversible:
             r.lower_bound = -capacity
-        # irreversible reactions cannot have negative flux under any circumstances
         else:
             r.lower_bound = 0.0
-        
-        r.upper_bound = capacity
     
-    # make any activated exchanges unlimited
-        # while respecting existing directionality of bounds
-    for r in get_exchange_reactions(model):
-        if r.lower_bound < 0.0 and r.reversible:
+    # growth medium may be set in a binary on/off way
+        # but we make any activated exchanges unlimited
+    for r in exchanges:
+        if r.lower_bound < 0.0:
             r.lower_bound = -np.infty
         if r.upper_bound > 0.0:
             r.upper_bound = np.infty
     
-    # with the reaction bounds appropriately set, the problem is just standard FBA
+    # our problem can now be solved using the standard FBA algorithm
     FBA(model,show=show,norm=norm)
     
     return model
