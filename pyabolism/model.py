@@ -231,7 +231,7 @@ class MetaModel(object):
         self.reaction         = kwargs.get('reactions',_ReactionDict())
         self.compartment      = kwargs.get('compartments',_CompartmentDict())
         self.gene             = kwargs.get('genes',_GeneDict())
-        self.unit_definitions = kwargs.get('unit_definitions',{})   
+        self.unit_definition  = kwargs.get('unit_definitions',OrderedDict())   
 
     def metabolites(self):
         """docstring for metabolites"""
@@ -249,3 +249,6 @@ class MetaModel(object):
         """docstring for metabolites"""
         return self.gene.values()
 
+    def unit_definitions(self):
+        """docstring for unit_definitions"""
+        return self.unit_definition.values()
