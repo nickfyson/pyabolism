@@ -35,7 +35,7 @@ def load_model(filename):
             unit.exponent   = sbml_unit.getExponent()
             unit.offset     = sbml_unit.getOffset()
             unit_definition.units.append(unit)
-        model.unit_definitions[unit_definition.id] = unit_definition
+        model.unit_definition[unit_definition.id] = unit_definition
     
     # add all species
     for sbml_species in sbml_model.getListOfSpecies():
