@@ -23,4 +23,44 @@ def get_transport_reactions(model):
             transports.append( r ) 
     return transports
 
+def GPR_string2tree(gene_association):
+    """parse a standard format GPR string into an annotated tree"""
+    import networkx as nx
+
+    string = gene_association.replace('_',' ').replace('(',' ( ').replace(')',' ) ')
+
+    tokenized = string.split()
+
+    graph = nx.DiGraph()
+    graph.add_node('root')
+    parent = 'root'
+
+    for element in tokenized:
+
+        if element == '(':
+            old_parent = parent
+            parent     = 'node_%d'%len(graph.nodes())
+
+            graph.add_node(parent)
+            graph.add_edge(old_parent,parent)
+
+        elif element == ')':
+            parent = graph.predecessors(parent)[0]
+
+        elif element.lower() in ['and','or']:
+            if 'operation' in graph.node[parent]:
+                graph.node[parent]['operation'].append(element.lower())
+            else:
+                graph.node[parent]['operation'] = [element.lower()]
+        else:
+            graph.add_edge(parent,element)
+
+    for node in graph.nodes():
+        if 'operation' in graph.node[node]:
+            unique_ops = set(graph.node[node]['operation'])
+            if len(unique_ops) > 1:
+                raise Exception('non-unique operators within a bracket - ambiguous statement!')
+            graph.node[node]['operation'] = unique_ops.pop()
+
+    return graph
 
