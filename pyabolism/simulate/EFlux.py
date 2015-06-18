@@ -14,7 +14,6 @@ def _get_capacity(gene_association,expressions):
     
     string = gene_association.replace('_',' ').replace('(',' ( ').replace(')',' ) ')
 
-    # tokenized = ['A','and','B','and','(','C','or','D',')']
     tokenized = string.split()
 
     graph = nx.DiGraph()
