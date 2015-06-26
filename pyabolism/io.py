@@ -183,4 +183,56 @@ def save_model(model,filename):
     writer = SBMLWriter()
     writer.writeSBML(sbml_document, filename)
     
+def load_bug(bug_name):
+    """Searches .pyabolism file for matching bug name
+        if available will load pickle file
+        otherwise, will load from SBML and store pickle for future use
+            
+        NB Pyabolism bugs are intended to speed up loading models, not for storage
+            of edits made. These should be written back to external SBML files
+            
+            Bugs will not in general survive upgrades to Pyabolism code base!
+            Use with care!
+        """
+    
+   
+    from .tools import find_config_folder
+    config_folder = find_config_folder()
 
+    if not config_folder:
+        raise Exception("Unable to load bug, can't find a config folder!")
+
+    import pickle
+    from os.path import isdir,sep
+
+    try:
+        return pickle.load(open(sep.join([config_folder,'bugs','%s.pickle'%bug_name]),'r'))
+    except IOError as e:
+        raise IOError('Sorry, unable to find a bug of that name...')
+
+ 
+
+def save_bug(model,bug_name):
+    """cache a model as pickle inside the pyabolism config folder
+    
+        NB Pyabolism bugs are intended to speed up loading models, not for storage
+            of edits made. These should be written back to external SBML files.
+            
+            Bugs will not in general survive upgrades to Pyabolism code base!
+            Use with care!!"""
+    
+    from .tools import find_config_folder
+    config_folder = find_config_folder()
+
+    if not config_folder:
+        raise Exception("Unable to save bug, can't find a config folder!")
+
+    import pickle
+    from os.path import isdir,sep
+
+    if not isdir(sep.join([config_folder,'bugs'])):
+        os.mkdir(sep.join([config_folder,'bugs']))
+
+    pickle.dump(model,open(sep.join([config_folder,'bugs','%s.pickle'%bug_name]),'w'))
+
+    return
