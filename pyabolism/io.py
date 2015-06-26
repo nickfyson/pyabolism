@@ -213,7 +213,7 @@ def load_bug(bug_name):
 
  
 
-def save_bug(model,bug_name):
+def save_bug(model,bug_name,overwrite=False):
     """cache a model as pickle inside the pyabolism config folder
     
         NB Pyabolism bugs are intended to speed up loading models, not for storage
@@ -229,11 +229,16 @@ def save_bug(model,bug_name):
         raise Exception("Unable to save bug, can't find a config folder!")
 
     import pickle
-    from os.path import isdir,sep
+    from os.path import isdir,sep,isfile
 
     if not isdir(sep.join([config_folder,'bugs'])):
         os.mkdir(sep.join([config_folder,'bugs']))
+    
+    pickle_name = sep.join([config_folder,'bugs','%s.pickle'%bug_name])
 
-    pickle.dump(model,open(sep.join([config_folder,'bugs','%s.pickle'%bug_name]),'w'))
+    if isfile(pickle_name) and not overwrite:
+        raise Exception('Bug already exists! Pass overwrite=True to replace existing pickle.')
+
+    pickle.dump(model,open(pickle_name,'w'))
 
     return
