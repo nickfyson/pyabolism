@@ -64,3 +64,34 @@ def GPR_string2tree(gene_association):
 
     return graph
 
+def find_config_folder():
+    """searches path from cwd to $HOME, searching for .pyabolism directory
+        if cwd not within home directory, searches cwd only
+        if finds nothing, returns None"""
+
+    
+    from os import getcwd
+    from os.path import sep,expanduser,isdir
+
+    folder_name = '.pyabolism'
+    
+    home_path = expanduser('~')
+    cwd       = getcwd()
+
+    if cwd[0:len(home_path)] != home_path:
+
+        test_path = sep.join([cwd,folder_name])
+        if isdir(test_path): return test_path
+
+    else:
+    
+        split_home_path = home_path.split(sep)
+        split_cwd       = cwd.split(sep)
+
+        for i in range(len(split_cwd)-len(split_home_path)+1):
+            
+            test_path = sep.join(split_cwd[:len(split_cwd)-i]+[folder_name])
+
+            if isdir(test_path): return test_path
+
+    return None
