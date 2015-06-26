@@ -1,8 +1,10 @@
 
-import os,sys,re
-from libsbml import SBMLReader, SBMLWriter, SBMLDocument, UnitKind_toString, UnitKind_forName, XMLNamespaces
+import os
+import re
+from libsbml import SBMLReader, SBMLWriter, SBMLDocument, UnitKind_toString, UnitKind_forName
 
 from .model import MetaModel, Compartment, Metabolite, Reaction, Unit, UnitDefinition
+
 
 def load_model(filename):
     """docstring for load_model"""
@@ -17,12 +19,13 @@ def load_model(filename):
     
     # initialise model
     
-    model = MetaModel( id=sbml_model.getId() )
+    model = MetaModel(id=sbml_model.getId())
     model.name = sbml_model.getName()
     
     # add all compartments
     for sbml_compartment in sbml_model.getListOfCompartments():
-        compartment = Compartment(sbml_compartment.getId(),name=sbml_compartment.getName(),outside=sbml_compartment.getOutside())
+        compartment = Compartment(sbml_compartment.getId(), name=sbml_compartment.getName(),
+                                  outside=sbml_compartment.getOutside())
         model.compartment.add(compartment)
     
     # add all the unit definitions
@@ -41,31 +44,35 @@ def load_model(filename):
     for sbml_species in sbml_model.getListOfSpecies():
         
         metabolite = Metabolite(sbml_species.getId(),
-                        name=sbml_species.getName(),
-                        compartment=sbml_species.getCompartment(),
-                        charge=sbml_species.getCharge(),
-                        boundaryCondition=sbml_species.getBoundaryCondition()
-                        )
+                                name=sbml_species.getName(),
+                                compartment=sbml_species.getCompartment(),
+                                charge=sbml_species.getCharge(),
+                                boundaryCondition=sbml_species.getBoundaryCondition())
+
         metabolite.raw_notes = sbml_species.getNotesString()
         model.metabolite.add(metabolite)
     
     # add all reactions
     for sbml_reaction in sbml_model.getListOfReactions():
         
-        reaction = Reaction(sbml_reaction.getId(), name=sbml_reaction.getName(), reversible=sbml_reaction.getReversible())
+        reaction = Reaction(sbml_reaction.getId(), name=sbml_reaction.getName(),
+                            reversible=sbml_reaction.getReversible())
         
         for string in notes_pattern.findall(sbml_reaction.getNotesString()):
             reaction.notes[string.split(':')[0].strip()] = string.split(':')[-1].strip()
         
-        reaction.lower_bound = sbml_reaction.getKineticLaw().getParameter('LOWER_BOUND').getValue() \
-                                if sbml_reaction.getKineticLaw().getParameter('LOWER_BOUND') else None
-        reaction.upper_bound = sbml_reaction.getKineticLaw().getParameter('UPPER_BOUND').getValue() \
-                                if sbml_reaction.getKineticLaw().getParameter('UPPER_BOUND') else None
+        reaction.lower_bound = \
+            sbml_reaction.getKineticLaw().getParameter('LOWER_BOUND').getValue() \
+            if sbml_reaction.getKineticLaw().getParameter('LOWER_BOUND') else None
+        reaction.upper_bound = \
+            sbml_reaction.getKineticLaw().getParameter('UPPER_BOUND').getValue() \
+            if sbml_reaction.getKineticLaw().getParameter('UPPER_BOUND') else None
         
-        reaction.default_bounds = (reaction.lower_bound,reaction.upper_bound)
+        reaction.default_bounds = (reaction.lower_bound, reaction.upper_bound)
         
-        reaction.objective_coefficient = sbml_reaction.getKineticLaw().getParameter('OBJECTIVE_COEFFICIENT').getValue() \
-                                            if sbml_reaction.getKineticLaw().getParameter('OBJECTIVE_COEFFICIENT') else 0.0
+        reaction.objective_coefficient = \
+            sbml_reaction.getKineticLaw().getParameter('OBJECTIVE_COEFFICIENT').getValue() \
+            if sbml_reaction.getKineticLaw().getParameter('OBJECTIVE_COEFFICIENT') else 0.0
         
         for sbml_reactant in sbml_reaction.getListOfReactants():
             
@@ -74,41 +81,39 @@ def load_model(filename):
             except KeyError:
                 m_id = sbml_reactant.getSpecies()
                 metabolite = Metabolite(m_id,
-                                compartment=m_id.split('_')[-1],
-                                boundaryCondition=False
-                                )
+                                        compartment=m_id.split('_')[-1],
+                                        boundaryCondition=False)
                 model.metabolite.add(metabolite)
-            stoichiometry   = -1.0*sbml_reactant.getStoichiometry()
+            stoichiometry   = -1.0 * sbml_reactant.getStoichiometry()
             
-            reaction.add_participant(metabolite,stoichiometry)
+            reaction.add_participant(metabolite, stoichiometry)
         
         for sbml_reactant in sbml_reaction.getListOfProducts():
             
             try:
                 metabolite      = model.metabolite[sbml_reactant.getSpecies()]
-            except KeyError: 
+            except KeyError:
                 m_id = sbml_reactant.getSpecies()
                 metabolite = Metabolite(m_id,
-                                compartment=m_id.split('_')[-1],
-                                boundaryCondition=False
-                                )
+                                        compartment=m_id.split('_')[-1],
+                                        boundaryCondition=False)
                 model.metabolite.add(metabolite)
-            stoichiometry   = 1.0*sbml_reactant.getStoichiometry()
+            stoichiometry   = 1.0 * sbml_reactant.getStoichiometry()
             
-            reaction.add_participant(metabolite,stoichiometry)
+            reaction.add_participant(metabolite, stoichiometry)
         
         model.reaction.add(reaction)
     
     return model
 
 
-def save_model(model,filename):
+def save_model(model, filename):
     """docstring for save_model"""
     
     sbml_document = SBMLDocument(2, 1)
     sbml_model    = sbml_document.createModel(model.id)
     
-    sbml_model.getNamespaces().add("http://www.w3.org/1999/xhtml","html")
+    sbml_model.getNamespaces().add("http://www.w3.org/1999/xhtml", "html")
     
     if model.name:
         sbml_model.setName(model.name)
@@ -133,12 +138,13 @@ def save_model(model,filename):
         species = sbml_model.createSpecies()
         species.setId(metabolite.id)
         species.setName(metabolite.name)
-        if metabolite.charge: species.setCharge(metabolite.charge)
+        if metabolite.charge:
+            species.setCharge(metabolite.charge)
         species.setCompartment(metabolite.compartment)
         species.setBoundaryCondition(metabolite.boundaryCondition)
         if metabolite.notes:
-            for (key,value) in metabolite.notes.items():
-                species.appendNotes('\n<html:p>%s: %s</html:p>'%(key,value))
+            for (key, value) in metabolite.notes.items():
+                species.appendNotes('\n<html:p>%s: %s</html:p>' % (key, value))
             species.appendNotes('\n')
     
     for reaction in model.reactions():
@@ -147,8 +153,8 @@ def save_model(model,filename):
         sbml_reaction.setName(reaction.name)
         sbml_reaction.setReversible(reaction.reversible)
         
-        for (key,value) in reaction.notes.items():
-            sbml_reaction.appendNotes('\n<html:p>%s: %s</html:p>'%(key,value))
+        for (key, value) in reaction.notes.items():
+            sbml_reaction.appendNotes('\n<html:p>%s: %s</html:p>' % (key, value))
         sbml_reaction.appendNotes('\n')
         
         kineticLaw = sbml_reaction.createKineticLaw()
@@ -171,7 +177,7 @@ def save_model(model,filename):
             sbml_upper.setId('FLUX_VALUE')
             sbml_upper.setValue(reaction.flux_value)
         
-        for (metabolite,coefficient) in reaction.participants.items():
+        for (metabolite, coefficient) in reaction.participants.items():
             if coefficient < 0:
                 speciesReference = sbml_reaction.createReactant()
                 coefficient      = abs(coefficient)
@@ -183,6 +189,7 @@ def save_model(model,filename):
     writer = SBMLWriter()
     writer.writeSBML(sbml_document, filename)
     
+
 def load_bug(bug_name):
     """Searches .pyabolism file for matching bug name
         if available will load pickle file
@@ -195,7 +202,6 @@ def load_bug(bug_name):
             Bugs will not in general survive upgrades to Pyabolism code base!
             Use with care!
         """
-    
    
     from .tools import find_config_folder
     config_folder = find_config_folder()
@@ -204,16 +210,15 @@ def load_bug(bug_name):
         raise Exception("Unable to load bug, can't find a config folder!")
 
     import pickle
-    from os.path import isdir,sep
+    from os.path import sep
 
     try:
-        return pickle.load(open(sep.join([config_folder,'bugs','%s.pickle'%bug_name]),'r'))
-    except IOError as e:
+        return pickle.load(open(sep.join([config_folder, 'bugs', '%s.pickle' % bug_name]), 'r'))
+    except IOError:
         raise IOError('Sorry, unable to find a bug of that name...')
 
- 
 
-def save_bug(model,bug_name,overwrite=False):
+def save_bug(model, bug_name, overwrite=False):
     """cache a model as pickle inside the pyabolism config folder
     
         NB Pyabolism bugs are intended to speed up loading models, not for storage
@@ -229,16 +234,16 @@ def save_bug(model,bug_name,overwrite=False):
         raise Exception("Unable to save bug, can't find a config folder!")
 
     import pickle
-    from os.path import isdir,sep,isfile
+    from os.path import isdir, sep, isfile
 
-    if not isdir(sep.join([config_folder,'bugs'])):
-        os.mkdir(sep.join([config_folder,'bugs']))
+    if not isdir(sep.join([config_folder, 'bugs'])):
+        os.mkdir(sep.join([config_folder, 'bugs']))
     
-    pickle_name = sep.join([config_folder,'bugs','%s.pickle'%bug_name])
+    pickle_name = sep.join([config_folder, 'bugs', '%s.pickle' % bug_name])
 
     if isfile(pickle_name) and not overwrite:
         raise Exception('Bug already exists! Pass overwrite=True to replace existing pickle.')
 
-    pickle.dump(model,open(pickle_name,'w'))
+    pickle.dump(model, open(pickle_name, 'w'))
 
     return
