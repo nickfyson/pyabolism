@@ -18,4 +18,5 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Intended Audience :: Science/Research",
     ],
+    test_suite='tests',
 )
