@@ -1,20 +1,20 @@
 
-import os,sys
-
 import numpy as np
 
 from .LP import grb, GRB, generate_basic_lp
 
 
-def FBA(model,show=False,norm=''):
-    """builds and solves an FBA linear program, updating the flux_value property of each reaction accordingly"""
+def FBA(model, show=False, norm=''):
+    """builds and solves an FBA linear program,
+       updating the flux_value property of each reaction accordingly"""
     
     lp = generate_basic_lp(model)
 
     lp.optimize()
 
     if lp.status == GRB.status.INFEASIBLE:
-        if show: print 'model infeasible : no LP solution'
+        if show:
+            print 'model infeasible : no LP solution'
         model.growing = False
         model.total_objective = None
         return
@@ -32,10 +32,12 @@ def FBA(model,show=False,norm=''):
         else:
             metabolite.shadow = 0
     
-    # in general the flux vector returned by FBA is not unique, so optional minimization of the norm is offered
+    # in general the flux vector returned by FBA is not unique,
+    # so optional minimization of the norm is offered
     if norm:
 
-        # the 'taxicab' norm (L1) can only return a minimised vector where all the signs of the components are unchanged
+        # the 'taxicab' norm (L1) can only return a minimised vector
+        # where all the signs of the components are unchanged
         if norm == 'L1':
             objective = grb.LinExpr()
 
@@ -45,19 +47,22 @@ def FBA(model,show=False,norm=''):
                 flux_value = reaction.flux_value
 
                 if reaction.objective_coefficient != 0:
-                    # to avoid numerical issues in floating point calculations, we slightly loosen bounds on the objective
-                    var.lb = flux_value*(1. - 1e-8)
+                    # to avoid numerical issues in floating point calculations,
+                    # we slightly loosen bounds on the objective
+                    var.lb = flux_value * (1. - 1e-8)
                     var.ub = np.infty
                 else:
-                    # if not part of the obective, we require only that the flux remain of the same *sign* as found originally
-                    var.lb = min(0,flux_value)
-                    var.ub = max(0,flux_value)
+                    # if not part of the obective, we require only that the flux
+                    # remain of the same *sign* as found originally
+                    var.lb = min(0, flux_value)
+                    var.ub = max(0, flux_value)
 
-                # all fluxes are in the objective function, such that we can minimise the *magnitudes*
-                objective += var*float(np.sign(flux_value))
-        
+                # all fluxes are in the objective function,
+                # such that we can minimise the *magnitudes*
+                objective += var * float(np.sign(flux_value))
 
-        # the euclidean norm requires non-linear objective, but allows the sign of each component to vary freely
+        # the euclidean norm requires non-linear objective,
+        # but allows the sign of each component to vary freely
         elif norm == 'L2':
             objective = grb.QuadExpr()
             for reaction in model.reactions():
@@ -65,12 +70,13 @@ def FBA(model,show=False,norm=''):
                 flux_value = reaction.flux_value
  
                 if reaction.objective_coefficient != 0:
-                    # to avoid numerical issues in floating point calculations, we slightly loosen bounds on the objective
-                    var.lb = flux_value*(1. - 1e-8)
+                    # to avoid numerical issues in floating point calculations,
+                    # we slightly loosen bounds on the objective
+                    var.lb = flux_value * (1. - 1e-8)
                     var.ub = np.infty
                 
                 # the square of every flux is in the objective function
-                objective += var*var
+                objective += var * var
         else:
             raise Exception('Unknown norm type...')
         
@@ -88,10 +94,12 @@ def FBA(model,show=False,norm=''):
     
     # we store the total objective achieved as a property of the model
     model.total_objective = 0
-    for reaction in [reaction for reaction in model.reactions() if reaction.objective_coefficient != 0]:
+    for reaction in \
+            [reaction for reaction in model.reactions() if reaction.objective_coefficient != 0]:
             model.total_objective += reaction.flux_value * reaction.objective_coefficient
             
             # where required, the flux through targeted reactions is output to the console
-            if show: print '%s flux = %18.10f'%(reaction.id,reaction.flux_value)
+            if show:
+                print '%s flux = %18.10f' % (reaction.id, reaction.flux_value)
 
     return

@@ -1,4 +1,2 @@
-
-from FBA import FBA
-from EFlux import EFlux
-
+from FBA import FBA  # NOQA
+from EFlux import EFlux  # NOQA
