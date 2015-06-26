@@ -189,7 +189,8 @@ def load_bug(bug_name):
         otherwise, will load from SBML and store pickle for future use
             
         NB Pyabolism bugs are intended to speed up loading models, not for storage
-            of edits made. These should be written back to external SBML files
+            of edits made. These should be written back to external SBML files for
+            safekeeping.
             
             Bugs will not in general survive upgrades to Pyabolism code base!
             Use with care!
