@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name = "Pyabolism",
-    version = "0.3dev",
+    version = "0.4dev",
     author = "Nick Fyson",
     author_email = "nick@nickfyson.co.uk",
     description = ("A module for constraint-based simulation of metabolic networks."),
@@ -13,10 +13,11 @@ setup(
     packages=['pyabolism','pyabolism.simulate'],
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.md')).read(),
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Topic :: Scientific/Engineering",
         "License :: OSI Approved :: BSD License",
         "Intended Audience :: Science/Research",
+        "Programming Language :: Python :: 2.7",
     ],
     test_suite='tests',
 )
