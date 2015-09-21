@@ -81,4 +81,4 @@ def EFlux(model, expressions, norm='L2', show=False, unlimited_transports=False)
     # our problem can now be solved using the standard FBA algorithm
     FBA(model, show=show, norm=norm)
     
-    return model
+    return
