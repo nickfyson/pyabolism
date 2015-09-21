@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="Pyabolism",
-    version="0.4",
+    version="0.4.1",
     author="Nick Fyson",
     author_email="mail@nickfyson.co.uk",
     description=("A module for constraint-based simulation of metabolic networks."),
