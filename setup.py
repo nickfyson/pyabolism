@@ -2,15 +2,15 @@ import os
 from setuptools import setup
 
 setup(
-    name = "Pyabolism",
-    version = "0.4dev",
-    author = "Nick Fyson",
-    author_email = "nick@nickfyson.co.uk",
-    description = ("A module for constraint-based simulation of metabolic networks."),
+    name="Pyabolism",
+    version="0.4",
+    author="Nick Fyson",
+    author_email="mail@nickfyson.co.uk",
+    description=("A module for constraint-based simulation of metabolic networks."),
     license = "BSD",
     keywords = "FBA metabolic network",
-    #url = "http://pypi.python.org/pypi/pyabolism",
-    packages=['pyabolism','pyabolism.simulate'],
+    # url = "http://pypi.python.org/pypi/pyabolism",
+    packages=['pyabolism', 'pyabolism.simulate'],
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.md')).read(),
     classifiers=[
         "Development Status :: 3 - Alpha",
