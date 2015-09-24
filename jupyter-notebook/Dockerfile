@@ -18,19 +18,26 @@ RUN apt-get -y install bzip2 libbz2-dev
 # early to avoid caching issues!
 RUN ($CONDA_DIR/envs/python2/bin/pip install python-libsbml) 
 
-RUN ($CONDA_DIR/envs/python2/bin/pip install xlrd) 
-
 # install gurobi library
 RUN wget -q -O - http://packages.gurobi.com/gurobi-apt.sh | sudo sh
 
+# install additional library found necessary for running plotting
+RUN apt-get -y install libxrender1
+
 # install Pyabolism into python2 CONDA version
-COPY . /tmp/pyabolism
-RUN (cd /tmp/pyabolism && $CONDA_DIR/envs/python2/bin/python setup.py install && rm -rf /tmp/pyabolism)
+# we install as under development, so if we map the relevant folder to the source
+# on the host computer, changes will be reflected without restarting python
+WORKDIR /home/jovyan
+RUN git clone https://github.com/nickfyson/pyabolism.git
+WORKDIR /home/jovyan/pyabolism
+RUN $CONDA_DIR/envs/python2/bin/python setup.py develop 
 
 # install python bindings into python2 CONDA version
 RUN (cd /opt/gurobi*/linux64 && $CONDA_DIR/envs/python2/bin/python setup.py install)
 
 # copy examples directory
-COPY examples /home/jovyan/work/examples/
+RUN cp -R /home/jovyan/pyabolism/examples /home/jovyan/work
 RUN chown -R $NB_USER:users /home/$NB_USER/work/examples
 
+# set the default directory when logging into container as root
+WORKDIR /home/jovyan
