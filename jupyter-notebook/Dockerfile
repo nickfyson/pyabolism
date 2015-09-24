@@ -21,6 +21,9 @@ RUN ($CONDA_DIR/envs/python2/bin/pip install python-libsbml)
 # install gurobi library
 RUN wget -q -O - http://packages.gurobi.com/gurobi-apt.sh | sudo sh
 
+# install additional library found necessary for running plotting
+RUN apt-get -y install libxrender1
+
 # install Pyabolism into python2 CONDA version
 # we install as under development, so if we map the relevant folder to the source
 # on the host computer, changes will be reflected without restarting python
