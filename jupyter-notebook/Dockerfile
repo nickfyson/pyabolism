@@ -39,5 +39,5 @@ RUN (cd /opt/gurobi*/linux64 && $CONDA_DIR/envs/python2/bin/python setup.py inst
 RUN cp -R /home/jovyan/pyabolism/examples /home/jovyan/work
 RUN chown -R $NB_USER:users /home/$NB_USER/work/examples
 
-# set the default directory when logging into container as root
-WORKDIR /home/jovyan
+# set the default workind directory
+WORKDIR /home/jovyan/work
