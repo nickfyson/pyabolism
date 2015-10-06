@@ -40,4 +40,4 @@ RUN cp -R /home/jovyan/pyabolism/examples /home/jovyan/work
 RUN chown -R $NB_USER:users /home/$NB_USER/work/examples
 
 # set the default workind directory
-WORKDIR /home/jovyan/work
+WORKDIR /home/jovyan
