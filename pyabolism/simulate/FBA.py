@@ -54,8 +54,11 @@ def FBA(model, show=False, norm=''):
                 else:
                     # if not part of the obective, we require only that the flux
                     # remain of the same *sign* as found originally
-                    var.lb = min(0, flux_value)
-                    var.ub = max(0, flux_value)
+                    # to avoid numerical issues in floating point calculations,
+                    # we slightly loosen bounds on the objective
+                    var.lb = flux_value * (1. - 1e-6)
+                    var.lb = min(0, flux_value * (1. - 1e-8))
+                    var.ub = max(0, flux_value * (1. + 1e-8))
 
                 # all fluxes are in the objective function,
                 # such that we can minimise the *magnitudes*
@@ -72,7 +75,7 @@ def FBA(model, show=False, norm=''):
                 if reaction.objective_coefficient != 0:
                     # to avoid numerical issues in floating point calculations,
                     # we slightly loosen bounds on the objective
-                    var.lb = flux_value * (1. - 1e-8)
+                    var.lb = flux_value * (1. - 1e-6)
                     var.ub = np.infty
                 
                 # the square of every flux is in the objective function
