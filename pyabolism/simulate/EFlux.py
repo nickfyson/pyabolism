@@ -38,9 +38,6 @@ def _get_capacity(gene_association, expressions):
 def EFlux(model, expressions, norm='L2', show=False, unlimited_transports=False):
     """implementation of the EF-Flux algorithm (Colijn et al)"""
     
-    for r in model.reactions():
-        r.reset_bounds()
- 
     exchanges  = get_exchange_reactions(model)
     transports = get_transport_reactions(model)
     
@@ -61,22 +58,17 @@ def EFlux(model, expressions, norm='L2', show=False, unlimited_transports=False)
                 
         capacity = capacities[r.id]
         
-        # this value for capacity determines the maximum flow possible through the reaction
-        r.upper_bound = capacity
-
-        # capacity due to enzyme expression can work in either direction (for reversible reactions)
-        if r.reversible:
+        # in order to avoid destroying limits determined by curators of the model
+        # we only allow our expression data to constrict existing constraints, not
+        # relax them
+        if (0.0 < capacity < r.upper_bound):
+            # this value for capacity determines the maximum flow possible through the reaction
+            r.upper_bound = capacity
+        
+        # similarly, for lower bound we only allow expression to change the limit if it
+        # shifts the bound closer to 0.0
+        if r.lower_bound < -capacity < 0.0:
             r.lower_bound = -capacity
-        else:
-            r.lower_bound = 0.0
-    
-    # growth medium may be set in a binary on/off way
-    # but we make any activated exchanges unlimited
-    for r in exchanges:
-        if r.lower_bound < 0.0:
-            r.lower_bound = -np.infty
-        if r.upper_bound > 0.0:
-            r.upper_bound = np.infty
     
     # our problem can now be solved using the standard FBA algorithm
     FBA(model, show=show, norm=norm)
