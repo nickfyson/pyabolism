@@ -99,3 +99,22 @@ def find_config_folder():
                 return test_path
 
     return None
+
+
+def construct_gene_list(model):
+
+    all_genes = set()
+    
+    import re
+    pattern = re.compile(model.gene_regex)
+
+    for r in model.reactions():
+        if r.notes.get('GENE_ASSOCIATION',''):
+            genes = set(pattern.findall(r.notes['GENE_ASSOCIATION']))
+
+            all_genes.update(genes)
+    
+    from pyabolism.model import Gene
+    for gid in all_genes:
+        model.gene.add(Gene(gid))
+
