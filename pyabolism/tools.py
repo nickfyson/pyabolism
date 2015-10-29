@@ -29,7 +29,10 @@ def GPR_string2tree(gene_association):
     """parse a standard format GPR string into an annotated tree"""
     import networkx as nx
 
-    string = gene_association.replace('_', ' ').replace('(', ' ( ').replace(')', ' ) ')
+    string = gene_association.replace('(', ' ( ').replace(')', ' ) ')
+
+    string = string.replace('_AND_', ' AND ').replace('_and_', ' and ')
+    string = string.replace('_OR_', ' OR ').replace('_or_', ' or ')
 
     tokenized = string.split()
 
