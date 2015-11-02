@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-test_GCFlux
+test_FBA
 ----------------------------------
 
-Tests for `GCFlux` function.
+Tests for `FBA` function.
 """
 import __future__
 
@@ -16,13 +16,13 @@ import numpy as np
 from pyabolism.io import load_model
 from pyabolism.simulate import FBA
 
-class TestGCFlux(unittest.TestCase):
+class TestFBA(unittest.TestCase):
 
     def setUp(self):
         
         self.model = load_model('examples/data/ecoli_core.xml')
        
-    def test_GCFlux(self, buffer=True):
+    def test_FBA(self, buffer=True):
         
         FBA(self.model, show=False)
         assert (np.round(self.model.total_objective, 8) == 0.86140741)
