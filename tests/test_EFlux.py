@@ -43,7 +43,7 @@ class TestEFlux(unittest.TestCase):
             seed(gid + gid + gid)
             self.expressions_B[gid] = 100 * random()
 
-    def test_EFlux(self, buffer=False):
+    def test_EFlux(self, buffer=True):
         
         EFlux(self.model, self.expressions_A, show=True)
         assert (np.round(self.model.total_objective, 8) == 0.44314716)
