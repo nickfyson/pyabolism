@@ -7,7 +7,6 @@ test_EFlux
 
 Tests for `EFlux` function.
 """
-import __future__
 
 import unittest
 
@@ -16,10 +15,10 @@ import numpy as np
 from pyabolism.io import load_model
 from pyabolism.simulate import EFlux
 
+
 class TestEFlux(unittest.TestCase):
 
     def setUp(self):
-        
         
         self.model = load_model('examples/data/ecoli_core.xml')
 
@@ -45,10 +44,10 @@ class TestEFlux(unittest.TestCase):
 
     def test_EFlux(self, buffer=True):
         
-        EFlux(self.model, self.expressions_A, show=True)
+        EFlux(self.model, self.expressions_A, show=False)
         assert (np.round(self.model.total_objective, 8) == 0.44314716)
         
-        EFlux(self.model, self.expressions_B, show=True)
+        EFlux(self.model, self.expressions_B, show=False)
         assert (np.round(self.model.total_objective, 8) == 0.30007236)
     
     def tearDown(self):
