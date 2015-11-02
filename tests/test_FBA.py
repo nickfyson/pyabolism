@@ -27,10 +27,10 @@ class TestFBA(unittest.TestCase):
         FBA(self.model, show=False)
         assert (np.round(self.model.total_objective, 8) == 0.86140741)
 
-        FBA(self.model, norm='L1', show=True)
+        FBA(self.model, norm='L1', show=False)
         assert (np.round(self.model.total_objective, 8) == 0.86140740)
         
-        FBA(self.model, norm='L2', show=True)
+        FBA(self.model, norm='L2', show=False)
         assert (np.round(self.model.total_objective, 8) == 0.86140655)
 
     def tearDown(self):
