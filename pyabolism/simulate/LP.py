@@ -1,5 +1,7 @@
 
 import os
+import random
+import string
 
 import gurobipy as grb
 from gurobipy import GRB
@@ -12,12 +14,15 @@ except:
     pass
 
 
-def generate_basic_lp(model):
+def generate_basic_lp(model, lp=None):
     """docstring for _generate_basic_lp"""
     # we first initialise the linear program
-        
-    lp = grb.Model('fba')
-    
+    if lp:
+        prefix = lp.getAttr('ModelName') + '_'
+    else:
+        lp = grb.Model(''.join(random.choice(string.ascii_uppercase) for _ in range(5)))
+        prefix = lp.getAttr('ModelName') + '_'
+
     lp.modelSense = GRB.MAXIMIZE
     
     # reaction fluxes are the variables in the linear model
@@ -30,13 +35,13 @@ def generate_basic_lp(model):
                       reaction.upper_bound,
                       reaction.objective_coefficient,
                       GRB.CONTINUOUS,
-                      reaction.id)
+                      prefix + reaction.id)
         else:
             lp.addVar(max(reaction.lower_bound, 0.0),
                       reaction.upper_bound,
                       reaction.objective_coefficient,
                       GRB.CONTINUOUS,
-                      reaction.id)
+                      prefix + reaction.id)
     lp.update()
     
     # each metabolite becomes a constraint,
@@ -47,7 +52,7 @@ def generate_basic_lp(model):
         variables       = []
         stoichiometries = []
         for reaction in model.reaction.get_by_contains(metabolite):
-            variables.append(lp.getVarByName(reaction.id))
+            variables.append(lp.getVarByName(prefix + reaction.id))
             stoichiometries.append(reaction.participants[metabolite])
 
         if metabolite.boundaryCondition:
@@ -57,7 +62,7 @@ def generate_basic_lp(model):
         else:
             # the weighted sum of all the reactions featuring the metabolite
             # must have a net total of zero
-            lp.addConstr(grb.LinExpr(stoichiometries, variables), GRB.EQUAL, 0.0, metabolite.id)
+            lp.addConstr(grb.LinExpr(stoichiometries, variables), GRB.EQUAL, 0.0, prefix + metabolite.id)
     
     lp.update()
     
