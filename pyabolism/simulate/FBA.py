@@ -10,8 +10,6 @@ def FBA(model, show=False, norm=''):
     
     lp = generate_basic_lp(model)
 
-    prefix = lp.getAttr('ModelName') + '_'
-
     lp.optimize()
 
     if lp.status == GRB.status.INFEASIBLE:
@@ -25,12 +23,12 @@ def FBA(model, show=False, norm=''):
         # preserving the fluxes as found in the model before FBA
     for reaction in model.reactions():
         reaction.loaded_flux = reaction.flux_value
-        reaction.flux_value  = lp.getVarByName(prefix + reaction.id).X
+        reaction.flux_value  = lp.getVarByName(model.name + reaction.id).X
     
     # shadow price of a constraint is a property that can be useful for some analyses
     for metabolite in model.metabolites():
-        if lp.getConstrByName(prefix + metabolite.id):
-            metabolite.shadow = lp.getConstrByName(prefix + metabolite.id).getAttr('Pi')
+        if lp.getConstrByName(model.name + metabolite.id):
+            metabolite.shadow = lp.getConstrByName(model.name + metabolite.id).getAttr('Pi')
         else:
             metabolite.shadow = 0
     
@@ -45,7 +43,7 @@ def FBA(model, show=False, norm=''):
 
             for reaction in model.reactions():
                 
-                var        = lp.getVarByName(prefix + reaction.id)
+                var        = lp.getVarByName(model.name + reaction.id)
                 flux_value = reaction.flux_value
 
                 if reaction.objective_coefficient != 0:
@@ -71,7 +69,7 @@ def FBA(model, show=False, norm=''):
         elif norm == 'L2':
             objective = grb.QuadExpr()
             for reaction in model.reactions():
-                var        = lp.getVarByName(prefix + reaction.id)
+                var        = lp.getVarByName(model.name + reaction.id)
                 flux_value = reaction.flux_value
  
                 if reaction.objective_coefficient != 0:
@@ -95,7 +93,7 @@ def FBA(model, show=False, norm=''):
 
         # we store the new fluxes found thanks to the minimisation
         for reaction in model.reactions():
-            reaction.flux_value = lp.getVarByName(prefix + reaction.id).X
+            reaction.flux_value = lp.getVarByName(model.name + reaction.id).X
     
     # we store the total objective achieved as a property of the model
     model.total_objective = 0

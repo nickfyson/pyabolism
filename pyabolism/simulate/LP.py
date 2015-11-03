@@ -1,7 +1,5 @@
 
 import os
-import random
-import string
 
 import gurobipy as grb
 from gurobipy import GRB
@@ -17,11 +15,8 @@ except:
 def generate_basic_lp(model, lp=None):
     """docstring for _generate_basic_lp"""
     # we first initialise the linear program
-    if lp:
-        prefix = lp.getAttr('ModelName') + '_'
-    else:
-        lp = grb.Model(''.join(random.choice(string.ascii_uppercase) for _ in range(5)))
-        prefix = lp.getAttr('ModelName') + '_'
+    if not lp:
+        lp = grb.Model('LP_' + model.name)
 
     lp.modelSense = GRB.MAXIMIZE
     
@@ -35,13 +30,13 @@ def generate_basic_lp(model, lp=None):
                       reaction.upper_bound,
                       reaction.objective_coefficient,
                       GRB.CONTINUOUS,
-                      prefix + reaction.id)
+                      model.name + reaction.id)
         else:
             lp.addVar(max(reaction.lower_bound, 0.0),
                       reaction.upper_bound,
                       reaction.objective_coefficient,
                       GRB.CONTINUOUS,
-                      prefix + reaction.id)
+                      model.name + reaction.id)
     lp.update()
     
     # each metabolite becomes a constraint,
@@ -52,7 +47,7 @@ def generate_basic_lp(model, lp=None):
         variables       = []
         stoichiometries = []
         for reaction in model.reaction.get_by_contains(metabolite):
-            variables.append(lp.getVarByName(prefix + reaction.id))
+            variables.append(lp.getVarByName(model.name + reaction.id))
             stoichiometries.append(reaction.participants[metabolite])
 
         if metabolite.boundaryCondition:
@@ -62,7 +57,8 @@ def generate_basic_lp(model, lp=None):
         else:
             # the weighted sum of all the reactions featuring the metabolite
             # must have a net total of zero
-            lp.addConstr(grb.LinExpr(stoichiometries, variables), GRB.EQUAL, 0.0, prefix + metabolite.id)
+            lp.addConstr(grb.LinExpr(stoichiometries, variables),
+                         GRB.EQUAL, 0.0, model.name + metabolite.id)
     
     lp.update()
     
