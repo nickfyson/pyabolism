@@ -8,11 +8,11 @@ def FBA(model, show=False, norm=''):
     """builds and solves an FBA linear program,
        updating the flux_value property of each reaction accordingly"""
     
-    lp = generate_basic_lp(model)
+    generate_basic_lp(model)
 
-    lp.optimize()
+    model.lp.optimize()
 
-    if lp.status == GRB.status.INFEASIBLE:
+    if model.lp.status == GRB.status.INFEASIBLE:
         if show:
             print 'model infeasible : no LP solution'
         model.growing = False
@@ -23,12 +23,12 @@ def FBA(model, show=False, norm=''):
         # preserving the fluxes as found in the model before FBA
     for reaction in model.reactions():
         reaction.loaded_flux = reaction.flux_value
-        reaction.flux_value  = lp.getVarByName(model.name + reaction.id).X
+        reaction.flux_value  = reaction.lp_var.X
     
     # shadow price of a constraint is a property that can be useful for some analyses
     for metabolite in model.metabolites():
-        if lp.getConstrByName(model.name + metabolite.id):
-            metabolite.shadow = lp.getConstrByName(model.name + metabolite.id).getAttr('Pi')
+        if hasattr(metabolite, 'lp_constr'):
+            metabolite.shadow = metabolite.lp_constr.getAttr('Pi')
         else:
             metabolite.shadow = 0
     
@@ -43,7 +43,7 @@ def FBA(model, show=False, norm=''):
 
             for reaction in model.reactions():
                 
-                var        = lp.getVarByName(model.name + reaction.id)
+                var        = reaction.lp_var
                 flux_value = reaction.flux_value
 
                 if reaction.objective_coefficient != 0:
@@ -69,7 +69,7 @@ def FBA(model, show=False, norm=''):
         elif norm == 'L2':
             objective = grb.QuadExpr()
             for reaction in model.reactions():
-                var        = lp.getVarByName(model.name + reaction.id)
+                var        = reaction.lp_var
                 flux_value = reaction.flux_value
  
                 if reaction.objective_coefficient != 0:
@@ -84,16 +84,16 @@ def FBA(model, show=False, norm=''):
             raise Exception('Unknown norm type...')
         
         # we set the objective function
-        lp.setObjective(objective)
+        model.lp.setObjective(objective)
 
         # we now wish to minimise the total (squared) flux
-        lp.modelSense = GRB.MINIMIZE
+        model.lp.modelSense = GRB.MINIMIZE
         
-        lp.optimize()
+        model.lp.optimize()
 
         # we store the new fluxes found thanks to the minimisation
         for reaction in model.reactions():
-            reaction.flux_value = lp.getVarByName(model.name + reaction.id).X
+            reaction.flux_value = reaction.lp_var.X
     
     # we store the total objective achieved as a property of the model
     model.total_objective = 0
