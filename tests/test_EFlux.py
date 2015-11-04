@@ -50,6 +50,12 @@ class TestEFlux(unittest.TestCase):
         EFlux(self.model, self.expressions_B, show=False)
         assert (np.round(self.model.total_objective, 8) == 0.30007236)
     
+        EFlux(self.model, self.expressions_B, show=False, norm='L1')
+        assert (np.round(self.model.total_objective, 5) == 0.30007)
+    
+        EFlux(self.model, self.expressions_B, show=False, norm='L2')
+        assert (np.round(self.model.total_objective, 5) == 0.30007)
+    
     def tearDown(self):
         pass
 
