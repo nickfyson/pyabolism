@@ -19,7 +19,7 @@ from pyabolism.simulate import EFlux
 class TestEFlux(unittest.TestCase):
 
     def setUp(self):
-        
+
         self.model = load_model('examples/data/ecoli_core.xml')
 
         gene_ids = ['b2926', 'b2925', 'b0008', 'b3734', 'b3735', 'b3736', 'b3737', 'b3731',
@@ -43,22 +43,22 @@ class TestEFlux(unittest.TestCase):
             self.expressions_B[gid] = 100 * random()
 
     def test_EFlux(self, buffer=True):
-        
+
         EFlux(self.model, self.expressions_A, show=False)
         assert (np.round(self.model.total_objective, 8) == 0.44314716)
-        
+
         EFlux(self.model, self.expressions_B, show=False)
         assert (np.round(self.model.total_objective, 8) == 0.30007236)
-    
+
         EFlux(self.model, self.expressions_B, show=False, norm='L1')
         assert (np.round(self.model.total_objective, 5) == 0.30007)
-    
+
         EFlux(self.model, self.expressions_B, show=False, norm='L2')
         assert (np.round(self.model.total_objective, 5) == 0.30007)
-    
+
     def tearDown(self):
         pass
 
 if __name__ == '__main__':
-    
+
     unittest.main()

@@ -21,12 +21,12 @@ def generate_basic_lp(model, add_to_existing=False):
         model.lp = grb.Model('LP_' + model.name)
 
     model.lp.modelSense = GRB.MAXIMIZE
-    
+
     # reaction fluxes are the variables in the linear model
     # we take the objective coefficient from the corresponding reaction property,
     # which generally be non-zero for only the biomass reaction
     for reaction in model.reactions():
-        
+
         if reaction.reversible:
             var = model.lp.addVar(reaction.lower_bound,
                                   reaction.upper_bound,
@@ -40,13 +40,13 @@ def generate_basic_lp(model, add_to_existing=False):
                                   GRB.CONTINUOUS,
                                   model.name + reaction.id)
         reaction.lp_var = var
-    
+
     model.lp.update()
-    
+
     # each metabolite becomes a constraint,
     # since subject to stoichiometry of reactions the net production must be zero
     for metabolite in model.metabolites():
-        
+
         # each reaction that features the metabolite becomes an element in the constraint
         variables       = []
         stoichiometries = []

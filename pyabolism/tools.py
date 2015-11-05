@@ -2,7 +2,7 @@
 def get_exchange_reactions(model):
     """exchange reactions are those that convert boundary metabolites into external metabolites"""
     exchanges = []
-    
+
     for r in model.reactions():
 
         if [m for (m, s) in r.participants.items() if m.boundaryCondition]:
@@ -79,7 +79,7 @@ def find_config_folder():
     from os.path import sep, expanduser, isdir
 
     folder_name = '.pyabolism'
-    
+
     home_path = expanduser('~')
     cwd       = getcwd()
 
@@ -90,12 +90,12 @@ def find_config_folder():
             return test_path
 
     else:
-    
+
         split_home_path = home_path.split(sep)
         split_cwd       = cwd.split(sep)
 
         for i in range(len(split_cwd) - len(split_home_path) + 1):
-            
+
             test_path = sep.join(split_cwd[:len(split_cwd) - i] + [folder_name])
 
             if isdir(test_path):
@@ -107,7 +107,7 @@ def find_config_folder():
 def construct_gene_list(model):
 
     all_genes = set()
-    
+
     import re
     pattern = re.compile(model.gene_regex)
 
@@ -116,8 +116,7 @@ def construct_gene_list(model):
             genes = set(pattern.findall(r.notes['GENE_ASSOCIATION']))
 
             all_genes.update(genes)
-    
+
     from pyabolism.model import Gene
     for gid in all_genes:
         model.gene.add(Gene(gid))
-
