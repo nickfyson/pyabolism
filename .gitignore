@@ -58,3 +58,5 @@ target/
 *.swo
 
 examples/.ipynb_checkpoints
+jupyter-notebook/env_make
+jupyter-notebook/gurobi.lic

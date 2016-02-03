@@ -21,36 +21,38 @@ Note that while the Jupyter installation includes a Python 3 kernel, the Pyaboli
 
 This image comes with an installation of the Gurobi optimization library, but before running Pyabolism code you must obtain a valid license. Gurobi is free for academic use, and the necessary activation code can be easily obtained through their website, [www.gurobi.com](http://www.gurobi.com).
 
-For purposes of licensing Gurobi when spinning up this Docker container you should include the additional option ```--net=host```, dictating that docker shouldn't containerize networking. See the [Docker networking documentation](https://docs.docker.com/articles/networking/) for details, but in short this means that the Gurobi license will be bound to the docker host, rather than a specific instance of the container. This is vital for reusing the Pyabolism image without obtaining a fresh license every time. Using this networking option means we define the port Jupyter connects through in an alternative way (see below).
+For purposes of licensing Gurobi when spinning up this Docker container you should include the additional option --net=host, dictating that docker shouldn't containerize networking. See the [Docker networking documentation](https://docs.docker.com/articles/networking/) for details, but in short this means that the Gurobi license will be bound to the docker host, rather than a specific instance of the container. This is vital for reusing the Pyabolism image without obtaining a fresh license every time. Using this networking option means we define the port Jupyter connects through in an alternative way. To simplify the running of this container we include a Makefile, for which you must open a terminal inside the folder 'jupyter-notebook'.
 
-For convenience we name the container 'pyabolism', and the full command you need to run is...
-
+The first stage is to rename env_make_example as env_make and customise the port number as required. Then the container should be built and run with the default options...
 ```bash
-docker run -d --net=host -e PORT=8888 --name=pyabolism nickfyson/pyabolism
+    make build run
 ```
 
-Once the command completes, the Jupyter notebook should be viewable on port 8888 of your docker machine IP address. For example...
+The Jupyter notebook should be viewable on the relevant port of your docker machine IP address. For example, if you stuck with the default port of 8888...
 
 ```bash
     http://123.123.123.123:8888
 ```
 
-To license your gurobi installation, open a terminal from within the Jupyter interface by selecting 'Terminal' from the 'New' menu. Type the following command using the license code optained from Gurobi, and sticking with default options for save location...
+To license this instance of the gurobi installation, open a terminal from within the Jupyter interface by selecting 'Terminal' from the 'New' menu. Type the following command using the license code optained from Gurobi, and sticking with default options for save location...
 
 ```bash
-grbgetkey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    grbgetkey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
-Finally, returning to the command prompt on your host computer, take a snapshot of the running container. This preserves the licensing of Gurobi for later use...
-
+Returning to the home of the Jupyter notebook you should see a new file 'gurobi.lic'. Copy and paste the contents of this file into a new file named 'gurobi.lic' placed in the jupyter-notebook folder. Building the Docker container will automatically include all files with the .lic suffix in the root of the the container, and this can be used to ensure that all new containers are licensed for Gurobi (so long as the host computer stays the same). Now rebuild and run the container.
 ```bash
-docker commit pyabolism pyabolism_lic
+make build run
 ```
 
-Now in future a fully licensed Pyabolism container can be created using the following command...
+You should have a fully licensed Gurobi installation in the resulting container, which will work so long as the container is instantiated with the correct settings and on the same host computer. If sharing your docker snapshot with a 3rd party, or transferring to another host system, you will need to rerun the licensing command with a new license code.
 
+In general use, the Pyabolism Docker container is best run in the background, using...
 ```bash
-docker run -d --net=host -e PORT=8888 --name=pyabolism pyabolism_lic
+make start
 ```
 
-If sharing your docker snapshot with a 3rd party, or transferring to another host system, you will need to rerun the licensing command with a new license code.
+To use the Pyabolism container to do your own work, you need to map a folder from your local machine to the 'work' folder in the container. This can be achieved following the example in the example env_make file. Simply replace the example path with the full path to a folder on your computer, and uncomment the line. Then re-run the container with...
+```bash
+make rm start
+```
