@@ -58,6 +58,7 @@ class Metabolite(object):
         self.boundaryCondition  = kwargs.get('boundaryCondition', False)
         self.participations     = OrderedDict()
         self.notes              = {}
+        self.lp_constr          = None
 
     def __str__(self):
         return self.id
@@ -80,6 +81,7 @@ class Reaction(object):
         self.flux_value             = None
         self.notes                  = {}
         self.genes                  = []
+        self.lp_var                 = None
 
     def __str__(self):
         reactants = []

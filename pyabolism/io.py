@@ -247,3 +247,22 @@ def save_bug(model, bug_name, overwrite=False):
     pickle.dump(model, open(pickle_name, 'w'))
 
     return
+
+
+import pickle
+
+
+def model_to_pickle(model, filename):
+
+    model.lp = None
+    for r in model.reactions():
+        r.lp_var = None
+    for m in model.metabolites():
+        m.lp_constr = None
+
+    pickle.dump(model, open(filename, 'w'))
+
+
+def pickle_to_model(filename):
+
+    return pickle.load(open(filename, 'r'))
