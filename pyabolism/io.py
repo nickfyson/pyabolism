@@ -6,7 +6,27 @@ from libsbml import SBMLReader, SBMLWriter, SBMLDocument, UnitKind_toString, Uni
 from .model import MetaModel, Compartment, Metabolite, Reaction, Unit, UnitDefinition
 
 
-def load_model(filename):
+def load_model(filename, filetype='sbml'):
+
+    if filetype.lower() == 'sbml':
+        return load_sbml(filename)
+    elif filetype.lower() == 'pickle':
+        return load_pickle(filename)
+    else:
+        raise Exception('Unknown filetype!')
+
+
+def save_model(model, filename, filetype='sbml'):
+
+    if filetype.lower() == 'sbml':
+        save_sbml(model, filename)
+    elif filetype.lower() == 'pickle':
+        save_pickle(model, filename)
+    else:
+        raise Exception('Unknown filetype!')
+
+
+def load_sbml(filename):
     """docstring for load_model"""
 
     notes_pattern = re.compile('\<\w*:?\w*\>([^<>]*)\<\/\w*:?\w*\>')
@@ -107,7 +127,7 @@ def load_model(filename):
     return model
 
 
-def save_model(model, filename):
+def save_sbml(model, filename):
     """docstring for save_model"""
 
     sbml_document = SBMLDocument(2, 1)
@@ -190,7 +210,7 @@ def save_model(model, filename):
     writer.writeSBML(sbml_document, filename)
 
 
-def load_bug(bug_name):
+def uncache_model(bug_name):
     """Searches .pyabolism file for matching bug name
         if available will load pickle file
         otherwise, will load from SBML and store pickle for future use
@@ -202,6 +222,7 @@ def load_bug(bug_name):
             Bugs will not in general survive upgrades to Pyabolism code base!
             Use with care!
         """
+    raise Exception("Apologies, in it's current state this functionality is best avoided!")
 
     from .tools import find_config_folder
     config_folder = find_config_folder()
@@ -218,7 +239,7 @@ def load_bug(bug_name):
         raise IOError('Sorry, unable to find a bug of that name...')
 
 
-def save_bug(model, bug_name, overwrite=False):
+def cache_model(model, bug_name, overwrite=False):
     """cache a model as pickle inside the pyabolism config folder
 
         NB Pyabolism bugs are intended to speed up loading models, not for storage
@@ -227,13 +248,14 @@ def save_bug(model, bug_name, overwrite=False):
             Bugs will not in general survive upgrades to Pyabolism code base!
             Use with care!!"""
 
+    raise Exception("Apologies, in it's current state this functionality is best avoided!")
+
     from .tools import find_config_folder
     config_folder = find_config_folder()
 
     if not config_folder:
         raise Exception("Unable to save bug, can't find a config folder!")
 
-    import pickle
     from os.path import isdir, sep, isfile
 
     if not isdir(sep.join([config_folder, 'bugs'])):
@@ -244,7 +266,7 @@ def save_bug(model, bug_name, overwrite=False):
     if isfile(pickle_name) and not overwrite:
         raise Exception('Bug already exists! Pass overwrite=True to replace existing pickle.')
 
-    pickle.dump(model, open(pickle_name, 'w'))
+    save_pickle(model, open(pickle_name, 'w'))
 
     return
 
@@ -252,7 +274,7 @@ def save_bug(model, bug_name, overwrite=False):
 import pickle
 
 
-def model_to_pickle(model, filename):
+def save_pickle(model, filename):
 
     model.lp = None
     for r in model.reactions():
@@ -263,6 +285,6 @@ def model_to_pickle(model, filename):
     pickle.dump(model, open(filename, 'w'))
 
 
-def pickle_to_model(filename):
+def load_pickle(filename):
 
     return pickle.load(open(filename, 'r'))
