@@ -1,0 +1,9 @@
+PORTS = \
+    # -p 8888:8888 # for gurobi licensing reasons, define port as shown below
+
+VOLUMES = -v /var/log/docker:/var/log
+          # -v /path/to/local/work/folder/:/home/jovyan
+
+ENV = \
+  --net=host \
+  -e PORT=8888
