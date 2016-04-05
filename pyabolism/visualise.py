@@ -1,8 +1,14 @@
 
+from collections import defaultdict
 
 import matplotlib.pyplot as plt
+
+from matplotlib.path import Path
+import matplotlib.patches as patches
+
 try:
     import seaborn as sns
+    sns.set_context("poster")
 except ImportError:
     pass
 
@@ -10,82 +16,151 @@ from pyabolism.tools import get_exchange_reactions
 from pyabolism.tools import get_transport_reactions
 
 
-def plot_flux_distribution(model):
+def get_flux_line(reaction, plot_type='value'):
+    # flux_value might contain a range
+    if plot_type == 'value':
+        line_start = 0.0
+        line_end   = reaction.flux_value
+    if plot_type == 'range':
+        line_start = min(reaction.flux_range[0], reaction.flux_range[1])
+        line_end   = max(reaction.flux_range[0], reaction.flux_range[1])
 
-    plot_vals = []
+    return line_start, line_end
+
+
+def _extract_axis_limits(reactions):
+
+    breathing_space = 1.1
+
+    # if plot_type == 'value':
+    ymin = min([r.flux_value for r in reactions if r.flux_value <= 0.0])
+    ymax = max([r.flux_value for r in reactions if r.flux_value >= 0.0])
+
+    return breathing_space * ymin, breathing_space * ymax
+    # return ymin, ymax
+
+
+def plot_flux_distribution(model, reactions=None, title=None):
 
     exchanges  = set(get_exchange_reactions(model) + get_transport_reactions(model))
+    objectives = [r for r in model.reactions() if r.objective_coefficient != 0.0]
 
-    for r in model.reactions():
+    if not reactions:
+        reactions = model.reactions()
 
-        value = r.flux_value
-        upper = r.upper_bound
-
-        if r.reversible:
-            lower = r.lower_bound
-        else:
-            lower = 0.0
-
+    for r in reactions:
         if r in exchanges:
-            category = 'exchange'
-        # elif r in biomass:
-        #     category = 'biomass'
+            r.category = 'exchange'
+        elif r in objectives:
+            r.category = 'objective'
         else:
-            category = 'main'
+            r.category = 'main'
 
-        plot_vals.append((lower, value, upper, category, r.id))
-
-    category_order = {'exchange': 1, 'main': 2, 'objective': 3}
-
-    plot_vals.sort(key=lambda x: (category_order[x[-2]], x[-1]))
-
-    colors = {'exchange': 'g', 'main': 'b', 'objective': 'r'}
+    reactions.sort(key=lambda x: (x.category, x.id))
 
     fig = plt.figure(figsize=(20, 5))
 
-    sns.set_context("poster")
-
     axis = fig.add_subplot(111)
 
-    for i, (lower, value, upper, category, rid) in enumerate(plot_vals):
-        plt.plot([i, i], [lower, upper], color=(0.8, 0.8, 0.8), zorder=0)
-        plt.plot([i, i], [0.0, value], colors[category], zorder=1)
+    _plot_bounds(reactions, ax=None)
+    # _plot_fluxes(reactions, ax=None)
+    _plot_ranges(reactions, ax=None)
 
-    axis.set_xlim(0, len(plot_vals))
-
-    max_magnitude = max([abs(r.flux_value) for r in model.reactions()])
-
-    axis.set_ylim(-max_magnitude, +max_magnitude)
-
+    axis.set_xlim(-0.5, len(reactions))
     axis.set_xticks([])
+    axis.set_ylim(_extract_axis_limits(reactions))
 
     axis.set_xlabel('reactions')
     axis.set_ylabel('flux value')
 
+    if title:
+        axis.set_title(title)
+
     return
 
 
-def _plot_flux_points(flux_points, axis, linewidth=1.0):
-    """docstring for _plot_flux_points"""
+def _plot_bounds(reactions, ax=None):
 
-    y_min = y_max = 0
-    for (index, lower, value, upper, color) in flux_points:
-        # if lower and upper:
-        axis.plot([index, index], [lower, upper], color=color,
-                  alpha=0.2, linewidth=linewidth, zorder=1)
+    if not ax:
+        ax = plt.gca()
 
-        if value:
-            if value < 0:
-                axis.plot(index, value, color + 'v',
-                          linewidth=linewidth, zorder=3, markeredgewidth=0)
-                axis.vlines(index, value, 0, colors=color, linewidth=linewidth, zorder=3)
-            else:
-                axis.plot(index, value, color + '^',
-                          linewidth=linewidth, zorder=3, markeredgewidth=0)
-                axis.vlines(index, 0, value, colors=color, linewidth=linewidth, zorder=3)
+    verts = []
+    codes = []
+    for i, r in enumerate(reactions):
+        verts += [(i - 0.4, r.lower_bound),
+                  (i - 0.4, r.upper_bound),
+                  (i + 0.4, r.upper_bound),
+                  (i + 0.4, r.lower_bound),
+                  (i - 0.4, r.lower_bound)]
 
-            y_min = min(value, y_min)
-            y_max = max(value, y_max)
+        codes += [Path.MOVETO,
+                  Path.LINETO,
+                  Path.LINETO,
+                  Path.LINETO,
+                  Path.CLOSEPOLY]
 
-    axis.set_ylim([y_min * 1.1, y_max * 1.1])
+    path = Path(verts, codes)
+    patch = patches.PathPatch(path, facecolor=(0.8, 0.8, 0.8), lw=0, alpha=0.7)
+    ax.add_patch(patch)
 
+
+def _plot_fluxes(reactions, ax=None):
+
+    if not ax:
+        ax = plt.gca()
+
+    colors = {'exchange': 'g', 'main': 'b', 'objective': 'r'}
+
+    verts = defaultdict(list)
+    codes = defaultdict(list)
+
+    for i, r in enumerate(reactions):
+        verts[r.category] += [(i - 0.25, 0.0),
+                              (i - 0.25, r.flux_value),
+                              (i + 0.25, r.flux_value),
+                              (i + 0.25, 0.0),
+                              (i - 0.25, 0.0)]
+
+        codes[r.category] += [Path.MOVETO,
+                              Path.LINETO,
+                              Path.LINETO,
+                              Path.LINETO,
+                              Path.CLOSEPOLY]
+    for category in verts.keys():
+
+        path = Path(verts[category], codes[category])
+        patch = patches.PathPatch(path, facecolor=colors[category], lw=0)
+        ax.add_patch(patch)
+
+
+def _plot_ranges(reactions, ax=None):
+
+    if not ax:
+        ax = plt.gca()
+
+    colors = {'exchange': 'g', 'main': 'b', 'objective': 'r'}
+
+    verts = defaultdict(list)
+    codes = defaultdict(list)
+
+    for i, r in enumerate(reactions):
+
+        verts[r.category] += [(i - 0.25, r.flux_range[0]),
+                              (i - 0.25, r.flux_range[1]),
+                              (i + 0.25, r.flux_range[1]),
+                              (i + 0.25, r.flux_range[0]),
+                              (i - 0.25, r.flux_range[0])]
+
+        codes[r.category] += [Path.MOVETO,
+                              Path.LINETO,
+                              Path.LINETO,
+                              Path.LINETO,
+                              Path.CLOSEPOLY]
+    for category in verts.keys():
+
+        path = Path(verts[category], codes[category])
+        patch = patches.PathPatch(path, facecolor=colors[category], lw=0)
+        ax.add_patch(patch)
+
+    fluxes = [r.flux_value for r in reactions]
+    ax.scatter(range(len(fluxes)), fluxes, color='r', zorder=3)
