@@ -255,16 +255,16 @@ def GCFlux(original, expressions, limit_unpaired=False,
                     # for those reactions that are part of the objective,
                         # we constrain them to have (almost exactly) the same value
                     var.lb = flux_value * (1. - 1e-6)
-                    var.ub = flux_value * (1. + 1e-6)
+                    var.ub = np.infty
                 else:
                     # all other reactions are permitted to vary between zero and their current value
                     # to perform the L1 norm, we require that all fluxes maintain their sign from
                     # the original solution
                     var.lb = 0.0
-                    var.ub = flux_value
+                    var.ub = np.infty  # flux_value
 
                 # all fluxes are in the objective function, such that we can minimise the magnitudes
-                objective += var * float(np.sign(flux_value))
+                objective += var
 
         elif norm == 'L2':
             # euclidean or 'L2' norm
