@@ -6,6 +6,12 @@ from ..model import Reaction
 
 def irreversify(original):
 
+    original.lp = None
+    for r in original.reactions():
+        r.lp_var = None
+    for m in original.metabolites():
+        m.lp_constr = None
+
     model = deepcopy(original)
 
     model.original = original
@@ -77,9 +83,12 @@ def deirreversify(model):
     for r in original.reactions():
         r.loaded_flux = r.flux_value
         r.flux_value  = 0.0
-    # and then sum up the flux found in each associated reaction in the GC-Flux model
-    for r in model.reactions():
-        original.reaction[r.notes['original_rid']].flux_value += \
-            r.notes['original_rid_multiplier'] * r.flux_value
+
+    # check if the model has a solution associated with it
+    if hasattr(model, 'total_objective'):
+        # then sum up the flux found in each associated reaction in the GC-Flux model
+        for r in model.reactions():
+            original.reaction[r.notes['original_rid']].flux_value += \
+                r.notes['original_rid_multiplier'] * r.flux_value
 
     return original
