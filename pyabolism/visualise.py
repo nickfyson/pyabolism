@@ -63,8 +63,10 @@ def plot_flux_distribution(model, reactions=None, title=None):
     axis = fig.add_subplot(111)
 
     _plot_bounds(reactions, ax=None)
-    # _plot_fluxes(reactions, ax=None)
-    _plot_ranges(reactions, ax=None)
+    try:
+        _plot_ranges(reactions, ax=None)
+    except AttributeError:
+        _plot_fluxes(reactions, ax=None)
 
     axis.set_xlim(-0.5, len(reactions))
     axis.set_xticks([])
