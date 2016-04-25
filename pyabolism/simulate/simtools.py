@@ -84,10 +84,9 @@ def deirreversify(model):
         r.loaded_flux = r.flux_value
         r.flux_value  = 0.0
 
-    # check if the model has a solution associated with it
-    if hasattr(model, 'total_objective'):
-        # then sum up the flux found in each associated reaction in the GC-Flux model
-        for r in model.reactions():
+    # then sum up the flux found in each associated reaction in the GC-Flux model
+    for r in model.reactions():
+        if isinstance(r.flux_value, float):
             original.reaction[r.notes['original_rid']].flux_value += \
                 r.notes['original_rid_multiplier'] * r.flux_value
 
