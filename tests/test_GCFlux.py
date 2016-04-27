@@ -48,16 +48,16 @@ class TestGCFlux(unittest.TestCase):
     def test_GCFlux(self, buffer=True):
 
         GCFlux(self.model, self.expressions_A, show=False)
-        assert (np.round(self.model.total_objective, 8) == 0.53802361)
+        assert (np.round(self.model.total_objective, 8) == 0.53802415)
 
         GCFlux(self.model, self.expressions_B, show=False)
-        assert (np.round(self.model.total_objective, 8) == 0.39204582)
+        assert (np.round(self.model.total_objective, 8) == 0.39204621)
 
         GCFlux(self.model, self.expressions_B, show=False, norm='L1')
-        assert (np.round(self.model.total_objective, 8) == 0.39204582)
+        assert (np.round(self.model.total_objective, 8) == 0.39204621)
 
         GCFlux(self.model, self.expressions_B, show=False, norm='L2')
-        assert (np.round(self.model.total_objective, 8) == 0.39204582)
+        assert (np.round(self.model.total_objective, 8) == 0.39204621)
 
     def test_GCFlux_multi_LPs(self, buffer=True):
 
