@@ -38,7 +38,7 @@ lint:
 	flake8 pyabolism tests
 
 test:
-	nosetests
+	python setup.py test
 
 # test-all:
 # 	tox
