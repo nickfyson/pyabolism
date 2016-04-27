@@ -62,7 +62,7 @@ def FBA(model, show=False, norm=''):
                 if reaction.objective_coefficient != 0:
                     # to avoid potential numerical issues in floating point calculations,
                     # we slightly loosen bounds on the objective
-                    var.lb = flux_value * (1. - 1e-8)
+                    var.lb = flux_value * (1. - 1e-12)
                     var.ub = np.infty
 
                 # if reaction is in the limited list
@@ -83,7 +83,7 @@ def FBA(model, show=False, norm=''):
                 if reaction.objective_coefficient != 0:
                     # to avoid potential numerical issues in floating point calculations,
                     # we slightly loosen bounds on the objective
-                    var.lb = flux_value * (1. - 1e-6)
+                    var.lb = flux_value * (1. - 1e-12)
                     var.ub = np.infty
 
                 # if reaction is in the limited list
