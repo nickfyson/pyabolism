@@ -50,8 +50,7 @@ def FBA(model, show=False, norm=''):
     # so optional minimization of the norm is offered
     if norm:
 
-        # the 'taxicab' norm (L1) can only return a minimised vector
-        # where all the signs of the components are unchanged
+        # the 'taxicab' norm (L1)
         if norm == 'L1':
             objective = grb.LinExpr()
 
@@ -61,7 +60,7 @@ def FBA(model, show=False, norm=''):
                 flux_value = reaction.flux_value
 
                 if reaction.objective_coefficient != 0:
-                    # to avoid numerical issues in floating point calculations,
+                    # to avoid potential numerical issues in floating point calculations,
                     # we slightly loosen bounds on the objective
                     var.lb = flux_value * (1. - 1e-8)
                     var.ub = np.infty
@@ -72,8 +71,7 @@ def FBA(model, show=False, norm=''):
                 if reaction in limiteds:
                     objective += var
 
-        # the euclidean norm requires non-linear objective,
-        # but allows the sign of each component to vary freely
+        # the euclidean norm (L2) requires non-linear objective
         elif norm == 'L2':
 
             objective = grb.QuadExpr()
@@ -83,7 +81,7 @@ def FBA(model, show=False, norm=''):
                 flux_value = reaction.flux_value
 
                 if reaction.objective_coefficient != 0:
-                    # to avoid numerical issues in floating point calculations,
+                    # to avoid potential numerical issues in floating point calculations,
                     # we slightly loosen bounds on the objective
                     var.lb = flux_value * (1. - 1e-6)
                     var.ub = np.infty
