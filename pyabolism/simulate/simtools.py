@@ -91,3 +91,43 @@ def deirreversify(model):
                 r.notes['original_rid_multiplier'] * r.flux_value
 
     return original
+
+
+def unidirectionise_duplicates(model):
+
+    """
+    If required, those reactions that have been duplicated (for example
+    in splitting reversible reactions into foward and backward components),s
+    can be constrained such that only one runs at a time."""
+
+    from gurobipy import GRB
+
+    # for good measure, we use the naming convention of _f and _b to indicate duplicated
+    # reactions, and ensure that only one of them runs at a time
+    from collections import defaultdict
+    paired_reactions = defaultdict(list)
+    for r in model.reactions():
+        if 'original_rid' in r.notes:
+            paired_reactions[r.notes['original_rid']].append(r.lp_var)
+
+    constant = 1e1
+
+    for orid, variables in paired_reactions.items():
+
+        # it shouldn't be possible for the number of paired reactions to be more than 2
+        assert len(variables) < 3
+
+        # we only need to worry about additional constraint if there are two paired reactions
+        if len(variables) == 2:
+
+            bin_var = model.lp.addVar(0.0, 1.0, 0.0, GRB.BINARY, orid + '_binary')
+
+            model.lp.update()
+
+            model.lp.addConstr(variables[0] - constant * bin_var,
+                               GRB.LESS_EQUAL, 0.0, model.name + orid + 'directional_1')
+
+            model.lp.addConstr(variables[1] - constant + constant * bin_var,
+                               GRB.LESS_EQUAL, 0.0, model.name + orid + 'directional_2')
+
+    model.lp.update()

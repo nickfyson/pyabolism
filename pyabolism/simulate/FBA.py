@@ -34,10 +34,12 @@ def FBA(model, show=False, norm=''):
 
     # shadow price of a constraint is a property that can be useful for some analyses
     for metabolite in model.metabolites():
+        metabolite.shadow = None
         if metabolite.lp_constr:
-            metabolite.shadow = metabolite.lp_constr.getAttr('Pi')
-        else:
-            metabolite.shadow = 0
+            try:
+                metabolite.shadow = metabolite.lp_constr.getAttr('Pi')
+            except grb.GurobiError:
+                pass
 
     # default behaviour is that *all* reactions are included in the
     # minisation of overall norm
