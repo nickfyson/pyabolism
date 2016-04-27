@@ -9,6 +9,8 @@ from ..tools import get_transport_reactions, GPR_string2tree
 
 from .LP import grb, GRB, generate_basic_lp
 
+from .simtools import irreversify, deirreversify
+
 
 def _get_sufficient_complexes(gene_association):
     """from a complex gene association string,
@@ -54,64 +56,9 @@ def _get_sufficient_complexes(gene_association):
     return gprTree.node['root']['complexes']
 
 
-def _convert_model(original):
+def _convert_model(model):
 
-    model = deepcopy(original)
-
-    # our approach requires that reversible reactions be treated separately,
-    # in forward and backward direction
-    for r in model.reactions():
-
-        # a new reaction is created
-        new_r = Reaction(r.id + '_f')
-
-        new_r.name                   = r.name
-        new_r.reversible             = False  # all reactions in our altered model are irreversible
-        new_r.lower_bound            = 0.0
-        new_r.upper_bound            = r.upper_bound
-        # all reactions in our altered model are irreversible
-        new_r.default_bounds         = (0.0, r.default_bounds[1])
-        new_r.objective_coefficient  = r.objective_coefficient
-        new_r.flux_value             = r.flux_value
-        new_r.notes                  = copy(r.notes)
-        new_r.genes                  = copy(r.genes)
-
-        new_r.participants           = copy(r.participants)
-
-        # for retrieving the eventual results, we require the following information
-        new_r.notes['original_rid']            = r.id
-        new_r.notes['original_rid_multiplier'] = 1.0
-
-        model.reaction.add(new_r)
-
-        # if the original reaction is reversible, we add a second (flipped) version to our new model
-        if r.reversible:
-            new_r = Reaction(r.id + '_b')
-
-            new_r.name                   = r.name
-            new_r.reversible             = False  # again, all reactions are irreversible
-            new_r.lower_bound            = 0.0
-            new_r.upper_bound            = abs(r.lower_bound)
-            # the upper bound is the absolute value of the original lower
-            new_r.default_bounds         = (0.0, abs(r.default_bounds[0]))
-            new_r.objective_coefficient  = r.objective_coefficient
-            new_r.flux_value             = r.flux_value
-            new_r.notes                  = copy(r.notes)
-            new_r.genes                  = copy(r.genes)
-
-            new_r.participants           = copy(r.participants)
-
-            new_r.notes['original_rid']            = r.id
-            new_r.notes['original_rid_multiplier'] = -1.0
-
-            # here we negate the stoichiometry of all participants
-            for m, s in new_r.participants.items():
-                new_r.participants[m] = -1.0 * s
-
-            model.reaction.add(new_r)
-
-        # now we have replaced the original reaciton with duplicate(s) we remove it
-        model.reaction.remove(r)
+    model = irreversify(model)
 
     # to ensure that all orginal flux constraints present in the model
     # are preserved in the GC-Flux representation, we keep a record of
@@ -218,13 +165,13 @@ def _build_GCFlux_lp(model, expressions, add_to_existing=False, unlimited_transp
     model.lp.update()
 
 
-def GCFlux(original, expressions, limit_unpaired=False,
+def GCFlux(model, expressions, limit_unpaired=False,
            norm='L2', show=False, unlimited_transports=False):
     """implementation of the GC-Flux algorithm
     Gene complex-centric simulation of cellular metabolism"""
 
     # we make a duplicate model in order that the original remain in tact
-    model = _convert_model(original)
+    model = _convert_model(model)
 
     _build_GCFlux_lp(model, expressions)
 
@@ -314,20 +261,12 @@ def GCFlux(original, expressions, limit_unpaired=False,
             print model.lp.status
             raise e
 
-    # we now sum the fluxes of each reaction in the model to the relevant reaction in original
-    # we first store the loaded value, and set the flux to zero
-    for r in original.reactions():
-        r.loaded_flux = r.flux_value
-        r.flux_value  = 0.0
-    # and then sum up the flux found in each associated reaction in the GC-Flux model
-    for r in model.reactions():
-        original.reaction[r.notes['original_rid']].flux_value += \
-            r.notes['original_rid_multiplier'] * r.flux_value
+    model = deirreversify(model)
 
-    original.total_objective = 0.0
-    for reaction in [r for r in original.reactions() if r.objective_coefficient != 0]:
-        original.total_objective += reaction.flux_value * reaction.objective_coefficient
+    model.total_objective = 0.0
+    for reaction in [r for r in model.reactions() if r.objective_coefficient != 0]:
+        model.total_objective += reaction.flux_value * reaction.objective_coefficient
         if show:
             print '%s flux = %18.10f\n' % (reaction.id, reaction.flux_value)
 
-    return original
+    return model
