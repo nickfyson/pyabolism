@@ -25,10 +25,11 @@ def irreversify(original):
 
         new_r.name                   = r.name
         new_r.reversible             = False  # all reactions in our altered model are irreversible
-        new_r.lower_bound            = 0.0
-        new_r.upper_bound            = r.upper_bound
+        new_r.lower_bound            = max(0.0, r.lower_bound)
+        new_r.upper_bound            = max(0.0, r.upper_bound)
         # all reactions in our altered model are irreversible
-        new_r.default_bounds         = (0.0, r.default_bounds[1])
+        new_r.default_bounds         = (max(0.0, r.default_bounds[0]),
+                                        max(0.0, r.default_bounds[1]))
         new_r.objective_coefficient  = r.objective_coefficient
         new_r.flux_value             = r.flux_value
         new_r.notes                  = copy(r.notes)
@@ -48,10 +49,12 @@ def irreversify(original):
 
             new_r.name                   = r.name
             new_r.reversible             = False  # again, all reactions are irreversible
-            new_r.lower_bound            = 0.0
-            new_r.upper_bound            = abs(r.lower_bound)
+            new_r.lower_bound            = abs(min(0.0, r.upper_bound))
+            new_r.upper_bound            = abs(min(0.0, r.lower_bound))
             # the upper bound is the absolute value of the original lower
-            new_r.default_bounds         = (0.0, abs(r.default_bounds[0]))
+            new_r.default_bounds         = (abs(min(0.0, r.default_bounds[1])),
+                                            abs(min(0.0, r.default_bounds[0]))
+                                            )
             new_r.objective_coefficient  = r.objective_coefficient
             new_r.flux_value             = r.flux_value
             new_r.notes                  = copy(r.notes)
