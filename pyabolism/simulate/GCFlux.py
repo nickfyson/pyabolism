@@ -201,7 +201,7 @@ def GCFlux(model, expressions, limit_unpaired=False,
                 if reaction.objective_coefficient != 0:
                     # for those reactions that are part of the objective,
                         # we constrain them to have (almost exactly) the same value
-                    var.lb = flux_value * (1. - 1e-6)
+                    var.lb = flux_value * (1. - 1e-12)
                     var.ub = np.infty
                 else:
                     # all other reactions are permitted to vary between zero and their current value
@@ -222,9 +222,8 @@ def GCFlux(model, expressions, limit_unpaired=False,
 
                 if reaction.objective_coefficient != 0:
                     # only for the objective reactions to we add additional constraints
-                    var.lb = flux_value * (1. - 1e-6)
-                    var.ub = flux_value * (1. + 1e-6)
-
+                    var.lb = flux_value * (1. - 1e-12)
+                    var.ub = np.infty
                 # all fluxes are in the objective function, such that we can minimise the magnitudes
                 objective += var * var
         else:
