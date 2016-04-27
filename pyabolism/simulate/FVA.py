@@ -5,12 +5,12 @@ from .LP import GRB
 from FBA import FBA
 
 
-def FVA(model, obj_ratio=1.0):
+def FVA(model, norm='L2', obj_ratio=1.0, show=False):
 
     assert obj_ratio > 0.0, 'obj_ratio must be strictly positive.'
 
     # we run standard FBA to find the maximum objective attainable
-    FBA(model, show=False)
+    FBA(model, show=False, norm=norm)
 
     # we extract the linear program built for the original FBA problem
     lp = model.lp
@@ -54,3 +54,4 @@ def FVA(model, obj_ratio=1.0):
         r.flux_range = (minimum, maximum)
 
     return
+

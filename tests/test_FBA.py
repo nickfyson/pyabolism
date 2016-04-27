@@ -30,10 +30,10 @@ class TestFBA(unittest.TestCase):
         assert (np.round(self.model.total_objective, 8) == 0.86140741)
 
         FBA(self.model, norm='L1', show=False)
-        assert (np.round(self.model.total_objective, 8) == 0.86140740)
+        assert (np.round(self.model.total_objective, 8) == 0.86140741)
 
         FBA(self.model, norm='L2', show=False)
-        assert (np.round(self.model.total_objective, 8) == 0.86140655)
+        assert (np.round(self.model.total_objective, 8) == 0.86140741)
 
     def test_FBA_compound_LP(self, buffer=True):
 

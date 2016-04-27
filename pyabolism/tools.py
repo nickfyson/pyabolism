@@ -104,15 +104,22 @@ def find_config_folder():
     return None
 
 
-def construct_gene_list(model):
+def construct_gene_list(model, gene_regex=None):
 
     all_genes = set()
 
     import re
-    pattern = re.compile(model.gene_regex)
+
+    if gene_regex:
+        pattern = re.compile(gene_regex)
+    else:
+        try:
+            pattern = re.compile(model.gene_regex)
+        except:
+            raise Exception('No valid gene_regex found...')
 
     for r in model.reactions():
-        if r.notes.get('GENE_ASSOCIATION',''):
+        if r.notes.get('GENE_ASSOCIATION', ''):
             genes = set(pattern.findall(r.notes['GENE_ASSOCIATION']))
 
             all_genes.update(genes)

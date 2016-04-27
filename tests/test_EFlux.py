@@ -45,16 +45,17 @@ class TestEFlux(unittest.TestCase):
     def test_EFlux(self, buffer=True):
 
         EFlux(self.model, self.expressions_A, show=False)
-        assert (np.round(self.model.total_objective, 8) == 0.44314716)
+        assert (np.round(self.model.total_objective, 8) == 0.44314760)
 
         EFlux(self.model, self.expressions_B, show=False)
-        assert (np.round(self.model.total_objective, 8) == 0.30007236)
+        assert (np.round(self.model.total_objective, 8) == 0.30007266)
 
         EFlux(self.model, self.expressions_B, show=False, norm='L1')
-        assert (np.round(self.model.total_objective, 5) == 0.30007)
+        assert (np.round(self.model.total_objective, 8) == 0.30007266)
 
         EFlux(self.model, self.expressions_B, show=False, norm='L2')
-        assert (np.round(self.model.total_objective, 5) == 0.30007)
+        print(np.round(self.model.total_objective, 8))
+        assert (np.round(self.model.total_objective, 8) == 0.30007266)
 
     def tearDown(self):
         pass

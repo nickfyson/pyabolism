@@ -43,6 +43,9 @@ RUN chown -R $NB_USER:users /home/$NB_USER/work/examples
 # copies dummy file, to avoid failing when no license file is present
 COPY *.lic /home/$NB_USER/
 
+RUN (wget -q -O - https://bootstrap.pypa.io/ez_setup.py | python)
+RUN (pip install pip --upgrade)
+
 RUN (pip uninstall -y notebook)
 RUN (pip install notebook==4.1.0 --upgrade)
 
