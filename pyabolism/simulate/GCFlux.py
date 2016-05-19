@@ -196,44 +196,30 @@ def GCFlux(model, expressions, limit_unpaired=False,
     # but rather an abitrary flux vector from the solution space
     # to deal with this, we generally minimise the norm while maintaining total objective value
     if norm:
-        # tax-cab or 'L1' norm
-        if norm == 'L1':
+
+        if norm == 'L1':  # tax-cab or 'L1' norm
             objective = grb.LinExpr()
-            for reaction in model.reactions():
-
-                var        = reaction.lp_var
-                flux_value = reaction.flux_value
-
-                if reaction.objective_coefficient != 0:
-                    # for those reactions that are part of the objective,
-                        # we constrain them to have (almost exactly) the same value
-                    var.lb = flux_value * (1. - 1e-12)
-                    var.ub = np.infty
-                else:
-                    # all other reactions are permitted to vary between zero and their current value
-                    # to perform the L1 norm, we require that all fluxes maintain their sign from
-                    # the original solution
-                    var.lb = 0.0
-                    var.ub = np.infty  # flux_value
-
-                # all fluxes are in the objective function, such that we can minimise the magnitudes
-                objective += var
-
-        elif norm == 'L2':
-            # euclidean or 'L2' norm
+        elif norm == 'L2':  # euclidean or 'L2' norm
             objective = grb.QuadExpr()
-            for reaction in model.reactions():
-                var        = reaction.lp_var
-                flux_value = reaction.flux_value
-
-                if reaction.objective_coefficient != 0:
-                    # only for the objective reactions to we add additional constraints
-                    var.lb = flux_value * (1. - 1e-12)
-                    var.ub = np.infty
-                # all fluxes are in the objective function, such that we can minimise the magnitudes
-                objective += var * var
         else:
             raise Exception('Unknown norm type...')
+
+        for reaction in model.reactions():
+
+            var        = reaction.lp_var
+            flux_value = reaction.flux_value
+
+            if reaction.objective_coefficient != 0.0:
+                # for those reactions that are part of the objective,
+                # we constrain them to have (almost exactly) the same value
+                var.lb = flux_value * (1. - 1e-12)
+                var.ub = np.infty
+
+            # all fluxes are in the objective function, such that we can minimise the magnitudes
+            if norm == 'L1':
+                objective += var
+            else:
+                objective += var * var
 
         # we add the objective function that was built in the last section
         model.lp.setObjective(objective)
