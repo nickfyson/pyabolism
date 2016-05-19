@@ -89,7 +89,7 @@ def _convert_model(model):
             new_r.name                   = r.name
             new_r.reversible             = False
             new_r.lower_bound            = 0.0
-            new_r.upper_bound            = r.upper_bound
+            new_r.upper_bound            = np.infty
             new_r.default_bounds         = r.default_bounds
             new_r.objective_coefficient  = r.objective_coefficient
             new_r.flux_value             = r.flux_value
@@ -107,9 +107,8 @@ def _convert_model(model):
             model.reaction.add(new_r)
             duplicates.append(new_r)
 
-        if len(duplicates) > 1:
-            # the duplicates set and the original bounds are recorded
-            duplicates_and_bounds.append((duplicates, r.upper_bound))
+        # the duplicates set and the original bounds are recorded
+        duplicates_and_bounds.append((duplicates, r.lower_bound, r.upper_bound))
 
         # finally, once the reaction has been replaced by duplicates, we remove the original
         model.reaction.remove(r)
@@ -153,14 +152,21 @@ def _build_GCFlux_lp(model, expressions, add_to_existing=False, unlimited_transp
 
     # as well as the expression-related bounds, we must use the duplicate sets stored
     # earlier to re-apply the bounds from the original model definition
-    for duplicates, upper_bound in model.duplicates_and_bounds:
+    for duplicates, lower_bound, upper_bound in model.duplicates_and_bounds:
+
+        # print duplicates[0].id[:-3], lower_bound, upper_bound
 
         r_vars = [model.reaction[r.id].lp_var for r in duplicates]
 
         model.lp.addConstr(grb.LinExpr(np.ones(len(r_vars)), r_vars),
+                           GRB.GREATER_EQUAL,
+                           lower_bound,
+                           'duplicate_lower_%s' % duplicates[0].id[:-3])
+
+        model.lp.addConstr(grb.LinExpr(np.ones(len(r_vars)), r_vars),
                            GRB.LESS_EQUAL,
                            upper_bound,
-                           'duplicate_set_%s' % duplicates[0].id[:-3])
+                           'duplicate_upper_%s' % duplicates[0].id[:-3])
 
     model.lp.update()
 
