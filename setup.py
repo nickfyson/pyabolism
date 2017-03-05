@@ -3,9 +3,9 @@ from setuptools import setup
 
 setup(
     name="Pyabolism",
-    version="0.5.1",
+    version="1.0.0",
     author="Nick Fyson",
-    author_email="mail@nickfyson.co.uk",
+    author_email="nick@fyson.net",
     description=("A module for constraint-based simulation of metabolic networks."),
     license = "BSD",
     keywords = "FBA metabolic network",
@@ -13,7 +13,7 @@ setup(
     packages=['pyabolism', 'pyabolism.simulate'],
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.md')).read(),
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Topic :: Scientific/Engineering",
         "License :: OSI Approved :: BSD License",
         "Intended Audience :: Science/Research",
