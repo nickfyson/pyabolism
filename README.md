@@ -1,6 +1,6 @@
 # Pyabolism
 
-[![License](https://img.shields.io/badge/License-BSD-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-BSD-blue.svg)](#license)
 [![Python Version](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/downloads/)
 
 Pyabolism is a Python module for constraint-based simulation and analysis of metabolic networks. It provides tools for Flux Balance Analysis (FBA), Flux Variability Analysis (FVA), and integration of gene expression data into metabolic models.
@@ -155,8 +155,8 @@ model = pyabolism.io.load_model('model.xml')
 # Run FBA first to establish baseline
 pyabolism.simulate.FBA(model)
 
-# Run FVA
-pyabolism.simulate.FVA(model, fraction=0.9)
+# Run FVA (obj_ratio=0.9 means maintain at least 90% of optimal objective)
+pyabolism.simulate.FVA(model, obj_ratio=0.9)
 
 # Access flux ranges
 for reaction in model.reactions():
@@ -400,7 +400,7 @@ Alternative open-source solvers may be supported in future versions.
 
 ## License
 
-Pyabolism is licensed under the BSD License. See the LICENSE file for details.
+Pyabolism is licensed under the BSD License. See the [setup.py](setup.py) file for license details.
 
 ## Contact
 
