@@ -11,3 +11,7 @@ And for example usage see...
 
 https://github.com/nickfyson/pyabolism/tree/master/examples
 
+
+## Plotting
+
+The library has the facility to visualize simulation results, in a variety of colors.
