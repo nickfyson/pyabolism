@@ -99,7 +99,7 @@ pyabolism.simulate.FBA(model, show=True)
 
 # Access flux values
 for reaction in model.reactions():
-    print(f"{reaction.id}: {reaction.flux_value}")
+    print("{}: {}".format(reaction.id, reaction.flux_value))
 
 # Visualize flux distribution
 pyabolism.visualise.plot_flux_distribution(model)
@@ -137,10 +137,10 @@ model = pyabolism.io.load_model('model.xml')
 pyabolism.simulate.FBA(model, show=True)
 
 # Access results
-print(f"Growth rate: {model.total_objective}")
+print("Growth rate: {}".format(model.total_objective))
 for reaction in model.reactions():
     if reaction.flux_value != 0:
-        print(f"{reaction.id}: {reaction.flux_value}")
+        print("{}: {}".format(reaction.id, reaction.flux_value))
 ```
 
 ### Flux Variability Analysis (FVA)
@@ -160,7 +160,7 @@ pyabolism.simulate.FVA(model, obj_ratio=0.9)
 
 # Access flux ranges
 for reaction in model.reactions():
-    print(f"{reaction.id}: [{reaction.flux_range[0]}, {reaction.flux_range[1]}]")
+    print("{}: [{}, {}]".format(reaction.id, reaction.flux_range[0], reaction.flux_range[1]))
 ```
 
 ### Gene Expression Integration
